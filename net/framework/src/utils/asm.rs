@@ -4,15 +4,14 @@ use std::arch::asm;
 pub fn cpuid() {
     unsafe {
         let mut eax: u32 = 0x2;
-        let mut ebx: u32;
         let mut ecx: u32 = 0x0;
         let mut edx: u32;
         asm!(
             "cpuid",
             inout("eax") eax,
-            lateout("ebx") ebx,
             inout("ecx") ecx,
             lateout("edx") edx,
+            lateout("ebx") _, // discard ebx output
         );
     }
 }

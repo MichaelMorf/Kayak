@@ -58,3 +58,5 @@ pub mod common;
 pub mod control;
 pub mod shared_state;
 pub mod config;
+
+extern crate lazy_static;
