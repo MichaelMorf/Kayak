@@ -6,6 +6,7 @@ use super::iterator::*;
 use crate::headers::EndOffset;
 use crate::queues::*;
 use crate::scheduler::{Executable, Scheduler};
+use crate::interface::Packet;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 

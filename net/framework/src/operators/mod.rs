@@ -44,6 +44,10 @@ mod restore_header;
 mod add_metadata;
 mod add_metadata_mut;
 
+use crate::headers::EndOffset;
+use crate::interface::PacketTx;
+use crate::scheduler::Scheduler;
+
 /// Merge a vector of batches into one batch. Currently this just round-robins between merged batches, but in the future
 /// the precise batch being processed will be determined by the scheduling policy used.
 #[inline]
