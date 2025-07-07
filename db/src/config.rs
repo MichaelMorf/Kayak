@@ -17,6 +17,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
+use serde::{Serialize, Deserialize};
 
 use super::e2d2::headers::*;
 use super::toml;

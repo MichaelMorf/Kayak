@@ -14,7 +14,6 @@
  */
 
 use std::cell::Cell;
-use std::ops::{Generator, GeneratorState};
 use std::panic::*;
 use std::pin::Pin;
 use std::rc::Rc;
@@ -55,7 +54,7 @@ pub struct Container<'a> {
 
     // The actual generator/coroutine containing the extension's code to be
     // executed inside the database.
-    gen: Option<Pin<Box<Generator<Yield = u64, Return = u64>>>>,
+    gen: Option<Pin<Box<dyn FnMut() -> u64>>>,
 }
 
 // Implementation of methods on Container.
@@ -78,7 +77,7 @@ impl<'a> Container<'a> {
     pub fn new(
         prio: TaskPriority,
         context: Rc<Context<'a>>,
-        gen: Pin<Box<Generator<Yield = u64, Return = u64>>>,
+        gen: Pin<Box<dyn FnMut() -> u64>>,
     ) -> Container {
         // The generator is initialized to a dummy. The first call to run() will
         // retrieve the actual generator from the extension.
