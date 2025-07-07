@@ -1,5 +1,5 @@
 use super::MBuf;
-use headers::MacAddress;
+use crate::headers::MacAddress;
 use std::os::raw::c_char;
 #[link(name = "zcsi")]
 extern "C" {

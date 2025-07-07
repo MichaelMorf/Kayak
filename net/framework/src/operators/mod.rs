@@ -25,7 +25,7 @@ use self::transform_batch::TransformFn;
 use crate::common::*;
 use crate::headers::NullHeader;
 use crate::interface::{PacketRx, PacketTx};
-use scheduler::Scheduler;
+use crate::scheduler::Scheduler;
 
 #[macro_use]
 mod macros;

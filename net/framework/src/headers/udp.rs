@@ -1,5 +1,5 @@
 use super::EndOffset;
-use headers::IpHeader;
+use crate::headers::IpHeader;
 use std::default::Default;
 use std::fmt;
 

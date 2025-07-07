@@ -1,6 +1,6 @@
 use super::{Available, HUP, IOScheduler, PollHandle, PollScheduler, READ, Token, WRITE};
 use fnv::FnvHasher;
-use scheduler::Executable;
+use crate::scheduler::Executable;
 /// SCTP Connections.
 use sctp::*;
 

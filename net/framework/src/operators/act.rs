@@ -1,6 +1,6 @@
 use super::packet_batch::PacketBatch;
 use crate::common::*;
-use interface::PacketTx;
+use crate::interface::PacketTx;
 pub trait Act {
     /// Actually perform whatever needs to be done by this processing node.
     fn act(&mut self);
