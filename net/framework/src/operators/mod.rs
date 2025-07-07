@@ -23,7 +23,7 @@ pub use self::send_batch::SendBatch;
 pub use self::transform_batch::TransformBatch;
 use self::transform_batch::TransformFn;
 use crate::common::*;
-use crate::headers::NullHeader;
+use crate::headers::{EndOffset, NullHeader};
 use crate::interface::{PacketRx, PacketTx};
 use crate::scheduler::Scheduler;
 
