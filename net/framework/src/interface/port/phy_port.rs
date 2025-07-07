@@ -1,10 +1,10 @@
 use super::PortStats;
 use super::super::{PacketTx, PacketRx};
-use allocators::*;
-use common::*;
-use config::{NUM_RXD, NUM_TXD, PortConfiguration};
-use headers::MacAddress;
-use native::zcsi::*;
+use crate::allocators::*;
+use crate::common::*;
+use crate::config::{NUM_RXD, NUM_TXD, PortConfiguration};
+use crate::headers::MacAddress;
+use crate::native::zcsi::*;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::min;
