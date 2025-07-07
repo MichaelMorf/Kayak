@@ -27,8 +27,6 @@ extern crate fnv;
 extern crate twox_hash;
 extern crate regex;
 extern crate net2;
-use lazy_static::lazy_static;
-
 // TOML for scheduling configuration
 extern crate toml;
 // UUID for SHM naming
@@ -58,5 +56,3 @@ pub mod common;
 pub mod control;
 pub mod shared_state;
 pub mod config;
-
-extern crate lazy_static;

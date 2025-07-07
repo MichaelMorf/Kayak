@@ -11,7 +11,6 @@ pub fn cpuid() {
             inout("eax") eax,
             inout("ecx") ecx,
             lateout("edx") edx,
-            lateout("ebx") _, // discard ebx output
         );
     }
 }
