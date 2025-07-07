@@ -1,6 +1,6 @@
 #![recursion_limit = "1024"]
 #![feature(log_syntax)]
-#![feature(specialization)]
+//#![feature(specialization)]
 #![feature(slice_concat_ext)]
 //#![feature(fnbox)]
 //#![feature(alloc)]
@@ -8,7 +8,7 @@
 //#![feature(unique)]
 // Used for cache alignment.
 #![feature(allocator_api)]
-#![feature(ptr_internals)]
+//#![feature(ptr_internals)]
 
 #![allow(unused_features)]
 #![allow(unused_doc_comments)]

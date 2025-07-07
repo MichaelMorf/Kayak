@@ -1,6 +1,5 @@
 use fnv::FnvHasher;
 
-use crate::common::*;
 use crate::utils::Flow;
 
 use std::collections::HashMap;

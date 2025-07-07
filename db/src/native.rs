@@ -103,7 +103,7 @@ impl Task for Native {
         if self.state == INITIALIZED || self.state == YIELDED {
             self.state = RUNNING;
 
-            // [GENERATOR/COROUTINE CODE REMOVED - TODO: migrate to new coroutine API or async/await]
+            // TODO: Coroutine/generator code removed. Refactor to async/await or state machine if needed.
         }
 
         // Get the continuous time this task executed for.

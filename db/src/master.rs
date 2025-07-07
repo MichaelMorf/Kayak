@@ -1587,13 +1587,13 @@ impl Master {
             // Get the model for the given extension.
             let mut model = None;
             // If the extension doesn't need an ML model, don't waste CPU cycles in lookup.
-            if cfg!(feature = "ml-model") {
-                GLOBAL_MODEL.with(|a_model| {
-                    if let Some(a_model) = (*a_model).borrow().get(&name) {
-                        model = Some(Arc::clone(a_model));
-                    }
-                });
-            }
+            // if cfg!(feature = "ml-model") {
+            //     GLOBAL_MODEL.with(|a_model| {
+            //         if let Some(a_model) = (*a_model).borrow().get(&name) {
+            //             model = Some(Arc::clone(a_model));
+            //         }
+            //     });
+            // }
 
             // Create a Container for an extension and return.
             if let Some(ext) = self.extensions.get(tenant_id, name) {
@@ -1606,7 +1606,9 @@ impl Master {
                     alloc,
                     model,
                 ));
-                let gen = ext.get(Rc::clone(&db) as Rc<DB>);
+                // TODO: This used to be a generator/coroutine. Replace with a stub closure for now.
+                let gen: Pin<Box<dyn FnMut() -> u64>> = Box::pin(|| 0u64);
+                let _ = ext.get(Rc::clone(&db) as Rc<DB>, gen);
 
                 return Ok(Box::new(Container::new(TaskPriority::REQUEST, db, gen)));
             }

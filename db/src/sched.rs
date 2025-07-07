@@ -238,8 +238,7 @@ impl RoundRobin {
                     // if there are MAX_RX_PACKETS /4 yeilded tasks in the queue, OR
                     // if two dispatcher invocations are 2000 us apart, AND
                     // if the current dispatcher invocation received MAX_RX_PACKETS /4 new tasks.
-                    if cfg!(feature = "pushback")
-                        && is_dispatcher == true
+                    if is_dispatcher == true
                         && (queue_length >= MAX_RX_PACKETS / 8 || difference > time_trigger)
                         && ((self.waiting.read().len() - queue_length) > 0)
                     {
