@@ -22,8 +22,9 @@ pub use self::restore_header::*;
 pub use self::send_batch::SendBatch;
 pub use self::transform_batch::TransformBatch;
 use self::transform_batch::TransformFn;
-use headers::*;
-use interface::*;
+use crate::common::*;
+use crate::headers::NullHeader;
+use crate::interface::{PacketRx, PacketTx};
 use scheduler::Scheduler;
 
 #[macro_use]

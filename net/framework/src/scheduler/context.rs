@@ -215,7 +215,7 @@ impl NetBricksContext {
 }
 
 /// Initialize the system from a configuration.
-pub fn initialize_system(configuration: &NetbricksConfiguration) -> Result<NetBricksContext, ErrorKind> {
+pub fn initialize_system(configuration: &NetbricksConfiguration) -> Result<NetBricksContext> {
     init_system(configuration);
     let mut ctx: NetBricksContext = Default::default();
     let mut cores: HashSet<_> = configuration.cores.iter().cloned().collect();

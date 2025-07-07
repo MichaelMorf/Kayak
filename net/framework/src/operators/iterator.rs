@@ -1,5 +1,5 @@
-use headers::EndOffset;
-use interface::Packet;
+use crate::headers::EndOffset;
+use crate::interface::Packet;
 use std::cell::Cell;
 use std::marker::PhantomData;
 

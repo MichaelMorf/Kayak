@@ -1,5 +1,5 @@
 use super::{NetbricksConfiguration, PortConfiguration};
-use common::*;
+use crate::common::*;
 use std::fs::File;
 use std::io::Read;
 use toml::{self, Value};

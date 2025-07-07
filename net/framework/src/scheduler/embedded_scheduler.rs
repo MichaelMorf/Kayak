@@ -36,7 +36,7 @@ impl Default for EmbeddedScheduler {
 
 impl Scheduler for EmbeddedScheduler {
     /// Add a task, and return a handle allowing the task to be run.
-    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize, ErrorKind> {
+    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize> {
         self.tasks.push(Runnable::from_task(task));
         Ok(self.tasks.len())
     }

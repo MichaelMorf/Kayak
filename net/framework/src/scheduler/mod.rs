@@ -29,7 +29,7 @@ where
 }
 
 pub trait Scheduler {
-    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize, ErrorKind>
+    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize>
     where
         Self: Sized;
 }

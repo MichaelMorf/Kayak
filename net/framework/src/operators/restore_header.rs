@@ -2,9 +2,9 @@ use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
-use common::*;
-use headers::EndOffset;
-use interface::*;
+use crate::common::*;
+use crate::headers::EndOffset;
+use crate::interface::*;
 use std::marker::PhantomData;
 
 pub struct RestoreHeader<T, M, V>

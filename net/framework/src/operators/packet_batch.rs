@@ -1,10 +1,10 @@
 use super::Batch;
 use super::act::Act;
 use super::iterator::{BatchIterator, PacketDescriptor};
-use common::*;
-use headers::NullHeader;
-use interface::*;
-use native::zcsi::*;
+use crate::common::*;
+use crate::headers::NullHeader;
+use crate::native::zcsi::*;
+use crate::interface::*;
 use std::result;
 
 /// Base packet batch structure, this represents an array of mbufs and is the primary interface for sending and

@@ -2,9 +2,9 @@ use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
-use common::*;
-use headers::NullHeader;
-use interface::{PacketRx, PacketTx};
+use crate::common::*;
+use crate::headers::NullHeader;
+use crate::interface::{PacketRx, PacketTx};
 
 pub struct ReceiveBatch<T: PacketRx> {
     parent: PacketBatch,

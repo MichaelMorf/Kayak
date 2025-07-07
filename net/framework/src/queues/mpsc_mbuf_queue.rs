@@ -1,14 +1,14 @@
-use common::*;
-use headers::EndOffset;
-use interface::{Packet, PacketRx};
-use native::zcsi::MBuf;
-use operators::ReceiveBatch;
+use crate::common::*;
+use crate::headers::EndOffset;
+use crate::interface::{Packet, PacketRx};
+use crate::native::zcsi::MBuf;
+use crate::operators::ReceiveBatch;
 use std::clone::Clone;
 use std::cmp::min;
 use std::default::Default;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
-use utils::{pause, round_to_power_of_2};
+use crate::utils::{pause, round_to_power_of_2};
 
 #[derive(Default)]
 struct QueueMetadata {

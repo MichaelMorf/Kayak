@@ -1,5 +1,5 @@
 use super::packet_batch::PacketBatch;
-use common::*;
+use crate::common::*;
 use interface::PacketTx;
 pub trait Act {
     /// Actually perform whatever needs to be done by this processing node.
