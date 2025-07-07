@@ -1,5 +1,5 @@
 use super::{Executable, Scheduler};
-use common::*;
+use crate::common::*;
 use std::default::Default;
 
 /// Used to keep stats about each pipeline and eventually grant tokens, etc.
@@ -36,7 +36,7 @@ impl Default for EmbeddedScheduler {
 
 impl Scheduler for EmbeddedScheduler {
     /// Add a task, and return a handle allowing the task to be run.
-    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize> {
+    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize, ErrorKind> {
         self.tasks.push(Runnable::from_task(task));
         Ok(self.tasks.len())
     }

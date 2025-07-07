@@ -4,7 +4,7 @@ use std::default::Default;
 use std::sync::Arc;
 use std::sync::mpsc::{SyncSender, Receiver, sync_channel, RecvError};
 use std::thread;
-use utils;
+use crate::utils;
 
 /// Used to keep stats about each pipeline and eventually grant tokens, etc.
 struct Runnable {
@@ -63,7 +63,7 @@ impl Default for StandaloneScheduler {
 
 impl Scheduler for StandaloneScheduler {
     /// Add a task to the current scheduler.
-    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize> {
+    fn add_task<T: Executable + 'static>(&mut self, task: T) -> Result<usize, ErrorKind> {
         self.run_q.push(Runnable::from_task(task));
         Ok(self.run_q.len())
     }

@@ -1,8 +1,8 @@
-use allocators::CacheAligned;
-use config::NetbricksConfiguration;
-use interface::dpdk::{init_system, init_thread};
-use interface::{PmdPort, PortQueue, VirtualPort, VirtualQueue};
-use scheduler::*;
+use crate::allocators::CacheAligned;
+use crate::config::NetbricksConfiguration;
+use crate::interface::dpdk::{init_system, init_thread};
+use crate::interface::{PmdPort, PortQueue, VirtualPort, VirtualQueue};
+use crate::scheduler::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::mpsc::{sync_channel, SyncSender};
@@ -215,7 +215,7 @@ impl NetBricksContext {
 }
 
 /// Initialize the system from a configuration.
-pub fn initialize_system(configuration: &NetbricksConfiguration) -> Result<NetBricksContext> {
+pub fn initialize_system(configuration: &NetbricksConfiguration) -> Result<NetBricksContext, ErrorKind> {
     init_system(configuration);
     let mut ctx: NetBricksContext = Default::default();
     let mut cores: HashSet<_> = configuration.cores.iter().cloned().collect();
