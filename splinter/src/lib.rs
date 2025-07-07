@@ -23,8 +23,7 @@ extern crate db;
 pub extern crate env_logger;
 extern crate sandstorm;
 extern crate util;
-#[macro_use]
-pub extern crate log;
+pub use log::*;
 
 mod container;
 

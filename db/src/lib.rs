@@ -22,8 +22,7 @@
 extern crate libloading;
 extern crate sandstorm;
 extern crate serde;
-#[macro_use]
-extern crate serde_derive;
+use serde_derive::*;
 extern crate bincode;
 extern crate crypto;
 extern crate hashbrown;

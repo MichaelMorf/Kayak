@@ -20,8 +20,7 @@
 #![allow(bare_trait_objects)]
 
 extern crate db;
-#[macro_use]
-extern crate sandstorm;
+use sandstorm::*;
 
 use std::ops::Generator;
 use std::pin::Pin;

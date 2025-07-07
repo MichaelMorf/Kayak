@@ -20,8 +20,7 @@
 #![allow(bare_trait_objects)]
 
 extern crate crypto;
-#[macro_use]
-extern crate sandstorm;
+use sandstorm::*;
 extern crate openssl;
 
 use openssl::aes::{aes_ige, AesKey};

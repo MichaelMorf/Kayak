@@ -21,8 +21,7 @@
 
 extern crate bincode;
 extern crate rustlearn;
-#[macro_use]
-extern crate sandstorm;
+use sandstorm::*;
 
 use std::ops::Generator;
 use std::pin::Pin;

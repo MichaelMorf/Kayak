@@ -31,10 +31,9 @@ extern crate fnv;
 extern crate twox_hash;
 extern crate regex;
 extern crate net2;
-#[macro_use]
-extern crate lazy_static;
-#[cfg(feature = "sctp")]
-extern crate sctp;
+use lazy_static::lazy_static;
+use error_chain::error_chain;
+
 // TOML for scheduling configuration
 extern crate toml;
 // UUID for SHM naming
