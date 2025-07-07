@@ -14,10 +14,10 @@
  */
 
 //! This crate contains common utility code which is used on both client and server.
-#![feature(llvm_asm)]
 #![warn(missing_docs)]
 #![allow(non_snake_case)]
 extern crate bincode;
+extern crate lazy_static;
 use lazy_static::lazy_static;
 extern crate hashbrown;
 extern crate rustlearn;

@@ -22,24 +22,18 @@ use std::io::Read;
 use std::path::Path;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
-
-use rustlearn::ensemble::random_forest;
-use rustlearn::linear_models::sgdclassifier;
-use rustlearn::metrics;
-use rustlearn::prelude::*;
-use rustlearn::trees::decision_tree;
-
-use super::common;
+use lazy_static::lazy_static;
 
 /// Return a 64-bit timestamp using the rdtsc instruction.
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[inline]
 pub fn rdtsc() -> u64 {
+    let lo: u32;
+    let hi: u32;
     unsafe {
-        let lo: u32;
-        let hi: u32;
-        llvm_asm!("rdtsc" : "={eax}"(lo), "={edx}"(hi) : : : "volatile");
-        ((hi as u64) << 32) | lo as u64
+        std::arch::asm!("rdtsc", out("eax") lo, out("edx") hi);
     }
+    ((hi as u64) << 32) | (lo as u64)
 }
 
 /// Store the model for each extension.
