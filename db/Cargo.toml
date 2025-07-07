@@ -26,30 +26,26 @@ name = "net_bench"
 path = "src/bin/net_bench.rs"
 
 [dependencies]
-hashbrown    = "0.1.8"
-libc         = "0.2.43"
-nix          = "0.11.0"
-log          = "0.3"
-rand         = "0.4"
-time         = "0.1"
-spin         = "0.5.2"  # Consider using parking lot?
-bytes        = "0.4.7"
-env_logger   = "0.3"
-libloading   = "0.3"
-serde        = "1.0.37"
-serde_derive = "1.0.37"
-toml         = "0.4.5"
-bincode      = "1.0"
-rust-crypto  = "0.2.36"
+hashbrown    = "=0.1.8"
+libc         = "=0.2.43"
+nix          = "=0.11.0"
+log          = "=0.3.9"
+rand         = "=0.4.6"
+time         = "=0.1.43"
+spin         = "=0.5.2"
+bytes        = "=0.4.7"
+env_logger   = "=0.3.5"
+libloading   = "=0.3.0"
+serde        = "=1.0.37"
+serde_derive = "=1.0.37"
+toml         = "=0.4.5"
+bincode      = "=1.0.0"
+rust-crypto  = "=0.2.36"
 sandstorm    = {path = "../sandstorm"}
 e2d2         = {path = "../net/framework"}
 util         = {path = "../util"}
 
-# Add feature name in default features to enable cyclecounter for the given stage,
-# where stage name can be ["dispatch", "execution"].
 [features]
 default = []
-dispatch = [] # Print the time spent in various parts of dispatch stage.
-execution = [] # Print the time spend in various parts of execution stage.
-pushback = [] # Consider extension for pushback if this feature is enabled.
-ml-model = [] # Update the model reference in Context if this feature is enabled.
+dispatch = []
+execution = []

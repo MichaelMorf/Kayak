@@ -8,27 +8,23 @@ build = "build.rs"
 doctest = false
 
 [dependencies]
-libc = ">= 0.2.4"
-time = ">=0.1.0"
-getopts = "*"
-byteorder = "*"
-clippy = { version = "*", optional = true }
-fnv = "*"
-twox-hash = "1.1.1"
-regex = "0.2.10"
-lazy_static = "*"
-net2 = "*"
-# NIX restricts us to just unix for now, we can fix this if someone cares at a later point.
-nix = "*"
-# Figure out if we want this permanently or just for now.
-rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true}
-toml = "0.4.5"
-# Hack for SHM
-uuid= { version = "*", features=["v4"] }
-error-chain = "0.11.0"
-# etcdv3-rs={ git="https://github.com/apanda/etcdv3-rs" }
-tokio-core=">=0.1.8"
-futures=">=0.1.14"
+libc = "=0.2.4"
+time = "=0.1.0"
+getopts = "=0.2.21"
+byteorder = "=1.4.3"
+clippy = { version = "=0.0.302", optional = true }
+fnv = "=1.0.7"
+twox-hash = "=1.1.1"
+regex = "=0.2.10"
+lazy_static = "=1.4.0"
+net2 = "=0.2.37"
+nix = "=0.17.0"
+rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true }
+toml = "=0.4.5"
+uuid = { version = "=0.8.2", features=["v4"] }
+error-chain = "=0.11.0"
+tokio-core = "=0.1.8"
+futures = "=0.1.14"
 
 [features]
 default = []
@@ -38,5 +34,4 @@ packet_offset = []
 sctp = ["rust-sctp"]
 
 [build-dependencies]
-# Use Bindgen to generate DPDK structures.
-bindgen = "0.33.0"
+bindgen = "=0.33.0"

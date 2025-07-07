@@ -7,5 +7,5 @@ authors = ["Ankit Bhardwaj <bhrdwj.ankit@gmail.com>"]
 crate-type = ["dylib"]
 
 [dependencies]
-crypto-hash = "0.3.4"
+crypto-hash = "=0.3.4"
 sandstorm = { path = "../../sandstorm" }
