@@ -68,3 +68,6 @@ where
         T::fmt(&*self, f)
     }
 }
+
+unsafe impl<T: Send> Send for CacheAligned<T> {}
+unsafe impl<T: Sync> Sync for CacheAligned<T> {}

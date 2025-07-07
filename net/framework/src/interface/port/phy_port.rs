@@ -446,7 +446,8 @@ impl PmdPort {
     pub fn mac_address(&self) -> MacAddress {
         let mut address = MacAddress { addr: [0; 6] };
         unsafe {
-            rte_eth_macaddr_get(self.port, &mut address as *mut MacAddress);
+            // Fix FFI call: cast self.port to u8 and address to *mut ether_addr
+            rte_eth_macaddr_get(self.port as u8, &mut address as *mut _ as *mut ether_addr);
             address
         }
     }
