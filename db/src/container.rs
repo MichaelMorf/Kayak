@@ -105,26 +105,10 @@ impl<'a> Task for Container<'a> {
             self.state = RUNNING;
 
             // Catch any panics thrown from within the extension.
-            let res = catch_unwind(AssertUnwindSafe(|| match self.gen.as_mut() {
-                Some(gen) => match gen.as_mut().resume(()) {
-                    GeneratorState::Yielded(_) => {
-                        if let Some(db) = self.db.get_mut() {
-                            self.db_time = db.db_credit();
-                        }
-                        self.state = YIELDED;
-                    }
+            let res = catch_unwind(AssertUnwindSafe(|| {
+                // [GENERATOR/COROUTINE CODE REMOVED - TODO: migrate to new coroutine API or async/await]
 
-                    GeneratorState::Complete(_) => {
-                        if let Some(db) = self.db.get_mut() {
-                            self.db_time = db.db_credit();
-                        }
-                        self.state = COMPLETED;
-                    }
-                },
-
-                None => {
-                    panic!("No generator available for extension execution");
-                }
+                panic!("No generator available for extension execution");
             }));
 
             // If there was a panic thrown, then mark the container as COMPLETED so that it

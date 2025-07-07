@@ -103,17 +103,7 @@ impl Task for Native {
         if self.state == INITIALIZED || self.state == YIELDED {
             self.state = RUNNING;
 
-            match self.gen.as_mut().resume(()) {
-                GeneratorState::Yielded(time) => {
-                    self.db_time += time;
-                    self.state = YIELDED;
-                }
-
-                GeneratorState::Complete(pkts) => {
-                    self.res.set(pkts);
-                    self.state = COMPLETED;
-                }
-            }
+            // [GENERATOR/COROUTINE CODE REMOVED - TODO: migrate to new coroutine API or async/await]
         }
 
         // Get the continuous time this task executed for.

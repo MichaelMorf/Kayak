@@ -74,7 +74,9 @@ pub fn rdtsc() -> u64 {
     unsafe {
         let lo: u32;
         let hi: u32;
-        llvm_asm!("rdtsc" : "={eax}"(lo), "={edx}"(hi) : : : "volatile");
+        // llvm_asm!("rdtsc" : "={eax}"(lo), "={edx}"(hi) : : : "volatile");
+        // TODO: replace with std::arch::asm! or equivalent
+        panic!("rdtsc not implemented");
         ((hi as u64) << 32) | lo as u64
     }
 }
