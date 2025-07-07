@@ -1,5 +1,3 @@
-
-
 use std::collections::HashMap;
 use std::collections::hash_map::Iter;
 use std::hash::BuildHasherDefault;
@@ -114,10 +112,10 @@ pub fn new_cp_mergeable_store<T: AddAssign<T> + Default + Clone>(
             delay: delay,
             channel: sender,
         },
-        box CpMergeableStoreControlPlane {
+        Box::new(CpMergeableStoreControlPlane {
             // FIXME: Don't need this to be quite this big?
             flow_counters: HashMap::with_capacity_and_hasher(VEC_SIZE, Default::default()),
             channel: receiver,
-        },
+        }),
     )
 }

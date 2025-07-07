@@ -3,9 +3,17 @@ use std::arch::asm;
 #[inline]
 pub fn cpuid() {
     unsafe {
-        asm!("mov eax, 0x2", out("eax") _);
-        asm!("mov ecx, 0x0", out("ecx") _);
-        asm!("cpuid", out("eax") _, out("ebx") _, out("ecx") _, out("edx") _);
+        let mut eax: u32 = 0x2;
+        let mut ebx: u32;
+        let mut ecx: u32 = 0x0;
+        let mut edx: u32;
+        asm!(
+            "cpuid",
+            inout("eax") eax,
+            lateout("ebx") ebx,
+            inout("ecx") ecx,
+            lateout("edx") edx,
+        );
     }
 }
 

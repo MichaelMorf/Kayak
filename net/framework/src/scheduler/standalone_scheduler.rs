@@ -16,7 +16,7 @@ struct Runnable {
 impl Runnable {
     pub fn from_task<T: Executable + 'static>(task: T) -> Runnable {
         Runnable {
-            task: box task,
+            task: Box::new(task),
             cycles: 0,
             last_run: utils::rdtsc_unsafe(),
         }

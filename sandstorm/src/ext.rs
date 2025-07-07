@@ -29,6 +29,7 @@ use spin::RwLock;
 const EXT_BUCKETS: usize = 32;
 
 // The type signature of the function that will be searched for inside an so.
+#[allow(improper_ctypes_definitions)]
 type Proc = unsafe extern "C" fn(*mut DB) -> Pin<Box<dyn std::future::Future<Output = u64>>>;
 
 /// This type represents an extension that has been successfully loaded into
@@ -134,6 +135,8 @@ impl ExtensionManager {
         ExtensionManager {
             // Can't use the copy constructor because of the Arc<Extension>.
             extensions: [
+                RwLock::new(HashMap::new()),
+                RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),

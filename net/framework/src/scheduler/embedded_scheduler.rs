@@ -12,7 +12,7 @@ impl Runnable {
     pub fn from_task<T: Executable + 'static>(mut task: T) -> Runnable {
         let deps = task.dependencies();
         Runnable {
-            task: box task,
+            task: Box::new(task),
             dependencies: deps,
         }
     }

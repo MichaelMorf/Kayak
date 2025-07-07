@@ -6,11 +6,16 @@ use config::{NUM_RXD, NUM_TXD, PortConfiguration};
 use headers::MacAddress;
 use native::zcsi::*;
 use lazy_static::lazy_static;
+use regex::Regex;
 use std::cmp::min;
 use std::ffi::CString;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
+
+lazy_static! {
+    static ref PCI_RE: Regex = Regex::new(r"^\d{2}:\d{2}\.\d$").unwrap();
+}
 
 /// A DPDK based PMD port. Send and receive should not be called directly on this structure but on the port queue
 /// structure instead.
@@ -430,9 +435,6 @@ impl PmdPort {
     }
 
     fn cannonicalize_pci(pci: &str) -> CString {
-        lazy_static! {
-            static ref PCI_RE: Regex = Regex::new(r"^\d{2}:\d{2}\.\d$").unwrap();
-        }
         if PCI_RE.is_match(pci) {
             CString::new(format!("0000:{}", pci)).unwrap()
         } else {
