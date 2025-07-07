@@ -107,8 +107,11 @@ impl Extension {
     ///
     /// A generator that can be scheduled by the database.
     pub fn get(&self, db: Rc<DB>) -> Pin<Box<dyn std::future::Future<Output = u64>>> {
-        // Call into the procedure, and return the generator.
-        unsafe { (self.procedure)(db) }
+        // Convert Rc<DB> to *mut DB for FFI, then reconstruct Rc to avoid leak
+        let db_ptr = Rc::into_raw(db.clone()) as *mut DB;
+        let fut = unsafe { (self.procedure)(db_ptr) };
+        unsafe { Rc::from_raw(db_ptr); }
+        fut
     }
 }
 
