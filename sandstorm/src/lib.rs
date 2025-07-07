@@ -16,7 +16,7 @@
 //! This crate contains all the traits and common code which
 //! is used on both client and server.
 #![feature(type_ascription)]
-#![feature(generators, generator_trait)]
+#![feature(coroutines)]
 #![feature(rustc_private)]
 #![allow(bare_trait_objects)]
 #![warn(missing_docs)]
@@ -44,7 +44,6 @@ pub use std::boxed;
 pub use std::convert;
 pub use std::io;
 pub use std::mem::size_of;
-pub use std::ops::Generator;
 pub use std::pin::Pin;
 pub use std::rc;
 pub use std::result;
