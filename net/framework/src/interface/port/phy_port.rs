@@ -69,7 +69,7 @@ impl fmt::Display for PortQueue {
 /// Represents a single RX/TX queue pair for a port. This is what is needed to send or receive traffic.
 impl PortQueue {
     #[inline]
-    fn send_queue(&self, queue: i32, pkts: *mut *mut MBuf, to_send: i32) -> Result<u32, ErrorKind> {
+    fn send_queue(&self, queue: i32, pkts: *mut *mut MBuf, to_send: i32) -> Result<u32> {
         unsafe {
             let sent = send_pkts(self.port_id, queue, pkts, to_send);
             // let update = self.stats_tx.stats.load(Ordering::Relaxed) + sent as usize;
@@ -79,7 +79,7 @@ impl PortQueue {
     }
 
     #[inline]
-    fn recv_queue(&self, queue: i32, pkts: *mut *mut MBuf, to_recv: i32) -> Result<u32, ErrorKind> {
+    fn recv_queue(&self, queue: i32, pkts: *mut *mut MBuf, to_recv: i32) -> Result<u32> {
         unsafe {
             let recv = recv_pkts(self.port_id, queue, pkts, to_recv);
             // let update = self.stats_rx.stats.load(Ordering::Relaxed) + recv as usize;
@@ -151,7 +151,7 @@ impl PmdPort {
         self.txqs
     }
 
-    pub fn new_queue_pair(port: &Arc<PmdPort>, rxq: i32, txq: i32) -> Result<CacheAligned<PortQueue>, ErrorKind> {
+    pub fn new_queue_pair(port: &Arc<PmdPort>, rxq: i32, txq: i32) -> Result<CacheAligned<PortQueue>> {
         if rxq > port.rxqs || rxq < 0 {
             Err(ErrorKind::BadRxQueue(port.port, rxq).into())
         } else if txq > port.txqs || txq < 0 {
@@ -195,7 +195,7 @@ impl PmdPort {
         loopback: bool,
         tso: bool,
         csumoffload: bool,
-    ) -> Result<Arc<PmdPort>, ErrorKind> {
+    ) -> Result<Arc<PmdPort>> {
 
         let loopbackv = i32_from_bool(loopback);
         let tsov = i32_from_bool(tso);
@@ -239,7 +239,7 @@ impl PmdPort {
     }
 
     /// Create a new port that can talk to BESS.
-    fn new_bess_port(name: &str, core: i32) -> Result<Arc<PmdPort>, ErrorKind> {
+    fn new_bess_port(name: &str, core: i32) -> Result<Arc<PmdPort>> {
         let ifname = CString::new(name).unwrap();
         // This call returns the port number
         let port = unsafe {
@@ -262,7 +262,7 @@ impl PmdPort {
         }
     }
 
-    fn new_ovs_port(name: &str, core: i32) -> Result<Arc<PmdPort>, ErrorKind> {
+    fn new_ovs_port(name: &str, core: i32) -> Result<Arc<PmdPort>> {
         match name.parse() {
             Ok(iface) => {
                 // This call returns the port number
@@ -296,7 +296,7 @@ impl PmdPort {
         loopback: bool,
         tso: bool,
         csumoffload: bool,
-    ) -> Result<Arc<PmdPort>, ErrorKind> {
+    ) -> Result<Arc<PmdPort>> {
         let cannonical_spec = PmdPort::cannonicalize_pci(spec);
         let port = unsafe { attach_pmd_device((cannonical_spec[..]).as_ptr()) };
         if port >= 0 {
@@ -318,7 +318,7 @@ impl PmdPort {
         }
     }
 
-    fn null_port() -> Result<Arc<PmdPort>, ErrorKind> {
+    fn null_port() -> Result<Arc<PmdPort>> {
         Ok(Arc::new(PmdPort {
             connected: false,
             port: 0,
@@ -331,7 +331,7 @@ impl PmdPort {
     }
 
     /// Create a new port from a `PortConfiguration`.
-    pub fn new_port_from_configuration(port_config: &PortConfiguration) -> Result<Arc<PmdPort>, ErrorKind> {
+    pub fn new_port_from_configuration(port_config: &PortConfiguration) -> Result<Arc<PmdPort>> {
         PmdPort::new_port_with_queues_descriptors_offloads(
             &port_config.name[..],
             port_config.rx_queues.len() as i32,
@@ -365,7 +365,7 @@ impl PmdPort {
         loopback: bool,
         tso: bool,
         csumoffload: bool,
-    ) -> Result<Arc<PmdPort>, ErrorKind> {
+    ) -> Result<Arc<PmdPort>> {
         let parts: Vec<_> = name.splitn(2, ':').collect();
         match parts[0] {
             "bess" => PmdPort::new_bess_port(parts[1], rx_cores[0]),
@@ -408,7 +408,7 @@ impl PmdPort {
         txqs: i32,
         rx_cores: &[i32],
         tx_cores: &[i32],
-    ) -> Result<Arc<PmdPort>, ErrorKind> {
+    ) -> Result<Arc<PmdPort>> {
         PmdPort::new_port_with_queues_descriptors_offloads(
             name,
             rxqs,
@@ -423,14 +423,14 @@ impl PmdPort {
         )
     }
 
-    pub fn new_with_cores(name: &str, rx_core: i32, tx_core: i32) -> Result<Arc<PmdPort>, ErrorKind> {
+    pub fn new_with_cores(name: &str, rx_core: i32, tx_core: i32) -> Result<Arc<PmdPort>> {
         let rx_vec = vec![rx_core];
         let tx_vec = vec![tx_core];
         PmdPort::new_with_queues(name, 1, 1, &rx_vec[..], &tx_vec[..])
 
     }
 
-    pub fn new(name: &str, core: i32) -> Result<Arc<PmdPort>, ErrorKind> {
+    pub fn new(name: &str, core: i32) -> Result<Arc<PmdPort>> {
         PmdPort::new_with_cores(name, core, core)
     }
 
