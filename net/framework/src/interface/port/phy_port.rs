@@ -5,6 +5,7 @@ use crate::common::*;
 use crate::config::{NUM_RXD, NUM_TXD, PortConfiguration};
 use crate::headers::MacAddress;
 use crate::native::zcsi::*;
+use crate::native_include::ether_addr;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::min;
