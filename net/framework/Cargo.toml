@@ -8,8 +8,8 @@ build = "build.rs"
 doctest = false
 
 [dependencies]
-libc = "=0.2.4"
-time = "=0.1.0"
+libc = "0.2.69"
+time = "=0.1.43"
 getopts = "=0.2.21"
 byteorder = "=1.4.3"
 clippy = { version = "=0.0.302", optional = true }
