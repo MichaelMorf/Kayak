@@ -18,7 +18,6 @@
 #![allow(non_snake_case)]
 extern crate bincode;
 extern crate lazy_static;
-use lazy_static::lazy_static;
 extern crate hashbrown;
 extern crate rustlearn;
 

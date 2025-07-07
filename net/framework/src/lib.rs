@@ -1,20 +1,16 @@
 #![recursion_limit = "1024"]
-#![feature(llvm_asm)]
 #![feature(log_syntax)]
-#![feature(box_syntax)]
 #![feature(specialization)]
 #![feature(slice_concat_ext)]
 //#![feature(fnbox)]
 //#![feature(alloc)]
 //#![feature(heap_api)]
 //#![feature(unique)]
-#![feature(const_fn)]
 // Used for cache alignment.
 #![feature(allocator_api)]
 #![feature(ptr_internals)]
 
 #![allow(unused_features)]
-#![feature(integer_atomics)]
 #![allow(unused_doc_comments)]
 #![allow(bare_trait_objects)]
 #![allow(unused_mut)]
@@ -32,7 +28,6 @@ extern crate twox_hash;
 extern crate regex;
 extern crate net2;
 use lazy_static::lazy_static;
-use error_chain::error_chain;
 
 // TOML for scheduling configuration
 extern crate toml;

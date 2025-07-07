@@ -5,7 +5,7 @@ use common::*;
 use config::{NUM_RXD, NUM_TXD, PortConfiguration};
 use headers::MacAddress;
 use native::zcsi::*;
-use regex::Regex;
+use lazy_static::lazy_static;
 use std::cmp::min;
 use std::ffi::CString;
 use std::fmt;
