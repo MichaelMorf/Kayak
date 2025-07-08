@@ -14,7 +14,6 @@
  */
 
 use std::cell::Cell;
-use std::ops::Coroutine;
 use std::pin::Pin;
 
 use super::cycles;
@@ -25,19 +24,13 @@ use e2d2::common::EmptyMetadata;
 use e2d2::headers::UdpHeader;
 use e2d2::interface::Packet;
 
-// The expected type signature on a generator for a native operation (ex: get()). The return
-// value is an optional tuple consisting of a request and response packet parsed/deparsed upto
-// their UDP headers. This is to allow for operations that might not require a response packet
-// such as garbage collection, logging etc. to be run as generators too.
+// Type alias for native operation closures that return packet tuples
 type NativeGenerator = Pin<
     Box<
-        dyn Coroutine<
-            Yield = u64,
-            Return = Option<(
-                Packet<UdpHeader, EmptyMetadata>,
-                Packet<UdpHeader, EmptyMetadata>,
-            )>,
-        >,
+        dyn FnMut() -> Option<(
+            Packet<UdpHeader, EmptyMetadata>,
+            Packet<UdpHeader, EmptyMetadata>,
+        )>,
     >,
 >;
 
@@ -80,7 +73,7 @@ impl Native {
     /// # Return:
     ///
     /// A Task containing a native operation that can be handed off to, and run by the scheduler.
-    pub fn new(prio: TaskPriority, generator: NativeGenerator) -> Native {
+    pub fn new(prio: TaskPriority, mut generator: NativeGenerator) -> Native {
         // The res field is initialized to None. It will be populated when the task has completed
         // execution.
         Native {
@@ -104,7 +97,13 @@ impl Task for Native {
         if self.state == INITIALIZED || self.state == YIELDED {
             self.state = RUNNING;
 
-            // TODO: Coroutine/generator code removed. Refactor to async/await or state machine if needed.
+            // Execute the closure and store the result
+            if let Some(result) = (self.gen)() {
+                self.res.set(Some(result));
+                self.state = COMPLETED;
+            } else {
+                self.state = COMPLETED;
+            }
         }
 
         // Get the continuous time this task executed for.

@@ -805,8 +805,8 @@ impl Master {
         let tenant = self.get_tenant(tenant_id);
         let alloc: *const Allocator = &self.heap;
 
-        // Create a generator for this request.
-        let gen = Box::pin(#[coroutine] move || {
+        // Create a closure for this request.
+        let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
             let optype: u8 = 0x1; // OpType::SandstormRead
 
@@ -877,15 +877,11 @@ impl Master {
                 }
             }
 
-            // Deparse request and response packets down to UDP, and return from the generator.
-            return Some((
+            // Deparse request and response packets down to UDP, and return from the closure.
+            Some((
                 req.deparse_header(PACKET_UDP_LEN as usize),
                 res.deparse_header(PACKET_UDP_LEN as usize),
-            ));
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
+            ))
         });
 
         // Return a native task.
@@ -1088,8 +1084,8 @@ impl Master {
         let tenant = self.get_tenant(tenant_id);
         let alloc: *const Allocator = &self.heap;
 
-        // Create a generator for this request.
-        let gen = Box::pin(#[coroutine] move || {
+        // Create a closure for this request.
+        let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
             // If the tenant exists, check if it has a table with the given id,
@@ -1126,15 +1122,11 @@ impl Master {
             // Update the response header.
             res.get_mut_header().common_header.status = status;
 
-            // Deparse request and response packets to UDP, and return from the generator.
-            return Some((
+            // Deparse request and response packets to UDP, and return from the closure.
+            Some((
                 req.deparse_header(PACKET_UDP_LEN as usize),
                 res.deparse_header(PACKET_UDP_LEN as usize),
-            ));
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
+            ))
         });
 
         // Create and return a native task.
@@ -1310,8 +1302,8 @@ impl Master {
         let tenant = self.get_tenant(tenant_id);
         let alloc: *const Allocator = &self.heap;
 
-        // Create a generator for this request.
-        let gen = Box::pin(#[coroutine] move || {
+        // Create a closure for this request.
+        let gen = Box::pin(move || {
             let mut n_recs: u32 = 0;
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
             let optype: u8 = 0x1;
@@ -1382,15 +1374,11 @@ impl Master {
                 res.get_mut_header().num_records = n_recs;
             }
 
-            // Deparse request and response packets to UDP, and return from the generator.
-            return Some((
+            // Deparse request and response packets to UDP, and return from the closure.
+            Some((
                 req.deparse_header(PACKET_UDP_LEN as usize),
                 res.deparse_header(PACKET_UDP_LEN as usize),
-            ));
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
+            ))
         });
 
         // Create and return a native task.
@@ -1692,8 +1680,8 @@ impl Master {
         let tenant = self.get_tenant(tenant_id);
         let alloc: *const Allocator = &self.heap;
 
-        // Create a generator for this request.
-        let gen = Box::pin(#[coroutine] move || {
+        // Create a closure for this request.
+        let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
             let _outcome =
@@ -1764,15 +1752,11 @@ impl Master {
 
             res.get_mut_header().common_header.status = status;
 
-            // Deparse request and response packets down to UDP, and return from the generator.
-            return Some((
+            // Deparse request and response packets down to UDP, and return from the closure.
+            Some((
                 req.deparse_header(PACKET_UDP_LEN as usize),
                 res.deparse_header(PACKET_UDP_LEN as usize),
-            ));
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
+            ))
         });
 
         // Return a native task.
