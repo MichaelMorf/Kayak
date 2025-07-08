@@ -814,7 +814,10 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take()?.get_table(table_id)
+                tenant.take().and_then(| tenant | {
+                                status = RpcStatus::StatusTableDoesNotExist;
+                                tenant.get_table(table_id)
+                            })
                 // If the table exists, lookup the provided key, and update
                 // the status of the rpc.
                 .and_then(| table | {
