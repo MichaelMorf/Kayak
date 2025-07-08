@@ -19,9 +19,14 @@
 extern crate bincode;
 extern crate lazy_static;
 extern crate hashbrown;
-extern crate rustlearn;
+// Rustlearn disabled due to serde compatibility issues
+// #[cfg(feature = "ml")]
+// extern crate rustlearn;
 
 /// This module contains the code for Machine Learning model.
+// Disabled due to rustlearn incompatibility
+// #[cfg(feature = "ml")]
 pub mod model;
 /// Common constants used for the ML model, like dataset file path etc.
+// #[cfg(feature = "ml")]
 pub mod common;

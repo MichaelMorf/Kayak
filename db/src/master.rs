@@ -38,7 +38,9 @@ use super::tenant::Tenant;
 use super::tx::TX;
 use super::wireformat::*;
 
+#[cfg(feature = "ml")]
 use util::common::TESTING_DATASET;
+#[cfg(feature = "ml")]
 use util::model::{get_raw_data, insert_global_model, run_ml_application, GLOBAL_MODEL};
 
 use e2d2::common::EmptyMetadata;
@@ -323,6 +325,7 @@ impl Master {
     /// # Arguments
     ///
     /// * `num_tenants`: The number of tenants for this workload.
+    #[cfg(feature = "ml")]
     pub fn fill_analysis(&self, num_tenants: u32) {
         // Run the ML model required for the extension and store the serialized version
         // and deserialized version of the model, which will be used in the extension.
@@ -426,6 +429,7 @@ impl Master {
     ///
     /// * `num_tenants`: The number of tenants for this workload.
     /// * `num`:       The number of objects to be added to the data table.
+    #[cfg(feature = "ml")]
     pub fn fill_mix(&self, num_tenants: u32, num: u32) {
         let tao_table_id1 = 1;
         let tao_table_id2 = 2;

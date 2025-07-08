@@ -9,5 +9,5 @@ crate-type = ["dylib"]
 [dependencies]
 sandstorm = {path = "../../sandstorm"}
 util      = {path = "../../util"}
-bincode   = "=1.0.0"
+bincode   = "=0.9.2"
 rustlearn = "=0.5.0"
