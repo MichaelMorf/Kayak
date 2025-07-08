@@ -73,7 +73,7 @@ impl Native {
     /// # Return:
     ///
     /// A Task containing a native operation that can be handed off to, and run by the scheduler.
-    pub fn new(prio: TaskPriority, mut generator: NativeGenerator) -> Native {
+    pub fn new(prio: TaskPriority, generator: NativeGenerator) -> Native {
         // The res field is initialized to None. It will be populated when the task has completed
         // execution.
         Native {
@@ -98,7 +98,7 @@ impl Task for Native {
             self.state = RUNNING;
 
             // Execute the closure and store the result
-            if let Some(result) = (self.gen)() {
+            if let Some(result) = (&mut self.gen)() {
                 self.res.set(Some(result));
                 self.state = COMPLETED;
             } else {

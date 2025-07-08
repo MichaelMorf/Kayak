@@ -806,6 +806,7 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a closure for this request.
+        let mut tenant = Some(tenant);
         let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
             let optype: u8 = 0x1; // OpType::SandstormRead
@@ -813,7 +814,7 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.and_then(| tenant | {
+                tenant.take().and_then(| tenant | {
                                 status = RpcStatus::StatusTableDoesNotExist;
                                 tenant.get_table(table_id)
                             })
@@ -1085,12 +1086,13 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a closure for this request.
+        let mut tenant = Some(tenant);
         let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
             // If the tenant exists, check if it has a table with the given id,
             // and update the status of the rpc.
-            let outcome = tenant.and_then(|tenant| {
+            let outcome = tenant.take().and_then(|tenant| {
                 status = RpcStatus::StatusTableDoesNotExist;
                 tenant.get_table(table_id)
             });
@@ -1303,6 +1305,7 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a closure for this request.
+        let mut tenant = Some(tenant);
         let gen = Box::pin(move || {
             let mut n_recs: u32 = 0;
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
@@ -1311,7 +1314,7 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.and_then(| tenant | {
+                tenant.take().and_then(| tenant | {
                                 status = RpcStatus::StatusTableDoesNotExist;
                                 tenant.get_table(table_id)
                             });
@@ -1681,13 +1684,14 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a closure for this request.
+        let mut tenant = Some(tenant);
         let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
             let _outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                if let Some(tenant) = tenant {
+                if let Some(tenant) = tenant.take() {
                     if let Some(table) = tenant.lock_table().get(&table_id) {
                         // If the payload size is less than the name length, return an error.
                         if req.get_payload().len() < record_len {
