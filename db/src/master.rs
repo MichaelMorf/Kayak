@@ -814,10 +814,7 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take().and_then(| tenant | {
-                                status = RpcStatus::StatusTableDoesNotExist;
-                                tenant.get_table(table_id)
-                            })
+                tenant.take()?.get_table(table_id)
                 // If the table exists, lookup the provided key, and update
                 // the status of the rpc.
                 .and_then(| table | {
@@ -836,7 +833,7 @@ impl Master {
                 // and update the status of the rpc.
                 .and_then(| (opt, version) | {
                     if let Some(opt) = opt {
-                                let (k, value) = &opt;
+                                let (k, value): &(&Vec<u8>, &Vec<u8>) = &opt;
                                 status = RpcStatus::StatusInternalError;
                                 let _result = res.add_to_payload_tail(1, pack(&optype));
                                 let _ = res.add_to_payload_tail(size_of::<Version>(), &unsafe { transmute::<Version, [u8; 8]>(version) });
@@ -1341,7 +1338,7 @@ impl Master {
                         .and_then(|entry| Some((alloc.resolve(entry.value), entry.version)))
                         .and_then(|(opt, version)| {
                             if let Some(opt) = opt {
-                                let (k, value) = &opt;
+                                let (k, value): &(&Vec<u8>, &Vec<u8>) = &opt;
                                 res.add_to_payload_tail(1, pack(&optype)).ok();
                                 res.add_to_payload_tail(size_of::<Version>(), &unsafe {
                                     transmute::<Version, [u8; 8]>(version)

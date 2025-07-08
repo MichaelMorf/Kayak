@@ -98,7 +98,7 @@ impl Task for Native {
             self.state = RUNNING;
 
             // Execute the closure and store the result
-            if let Some(result) = (&mut self.gen)() {
+            if let Some(result) = Pin::as_mut(&mut self.gen).get_mut()() {
                 self.res.set(Some(result));
                 self.state = COMPLETED;
             } else {
