@@ -16,6 +16,11 @@
 use crypto::bcrypt::bcrypt;
 use hashbrown::HashMap;
 
+#[cfg(feature = "ml")]
+use bincode::serialize;
+#[cfg(feature = "ml")]
+use std::str::FromStr;
+
 use std::fs::File;
 use std::io::Write;
 use std::mem::{size_of, transmute};
@@ -90,9 +95,6 @@ impl Master {
         Master {
             // Cannot use copy constructor because of the Arc<Tenant>.
             tenants: [
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
@@ -592,7 +594,7 @@ impl Master {
         self.insert_tenant(tenant);
     }
 
-    /// Loads the get(), put(), tao(), and bad() extensions.
+    /// Loads the get() extension.
     ///
     /// # Arguments
     ///
@@ -1591,7 +1593,7 @@ impl Master {
             status = RpcStatus::StatusInvalidExtension;
 
             // Get the model for the given extension.
-            let mut model = None;
+            let model = None;
             // If the extension doesn't need an ML model, don't waste CPU cycles in lookup.
             // if cfg!(feature = "ml-model") {
             //     GLOBAL_MODEL.with(|a_model| {

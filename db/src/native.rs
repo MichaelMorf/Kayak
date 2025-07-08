@@ -14,7 +14,7 @@
  */
 
 use std::cell::Cell;
-use std::ops::Generator;
+use std::ops::Coroutine;
 use std::pin::Pin;
 
 use super::cycles;
@@ -31,7 +31,7 @@ use e2d2::interface::Packet;
 // such as garbage collection, logging etc. to be run as generators too.
 type NativeGenerator = Pin<
     Box<
-        Generator<
+        dyn Coroutine<
             Yield = u64,
             Return = Option<(
                 Packet<UdpHeader, EmptyMetadata>,
