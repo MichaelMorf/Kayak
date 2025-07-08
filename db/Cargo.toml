@@ -42,10 +42,9 @@ bincode      = "1.0"
 rust-crypto  = "=0.2.36"
 sandstorm    = {path = "../sandstorm"}
 e2d2         = {path = "../net/framework"}
-util         = {path = "../util", features = ["ml"]}
+util         = {path = "../util"}
 
 [features]
-default = ["ml"]
+default = []
 dispatch = []
 execution = []
-ml = ["util/ml"]
