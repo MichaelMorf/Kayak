@@ -13,16 +13,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-use bincode::serialize;
 use crypto::bcrypt::bcrypt;
 use hashbrown::HashMap;
 
 use std::fs::File;
 use std::io::Write;
 use std::mem::{size_of, transmute};
+use std::pin::Pin;
 use std::rc::Rc;
 use std::str::from_utf8;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use super::alloc::Allocator;
@@ -91,6 +90,9 @@ impl Master {
         Master {
             // Cannot use copy constructor because of the Arc<Tenant>.
             tenants: [
+                RwLock::new(HashMap::new()),
+                RwLock::new(HashMap::new()),
+                RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
@@ -802,7 +804,7 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a generator for this request.
-        let gen = Box::pin(move || {
+        let gen = Box::pin(#[coroutine] move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
             let optype: u8 = 0x1; // OpType::SandstormRead
 
@@ -1085,7 +1087,7 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a generator for this request.
-        let gen = Box::pin(move || {
+        let gen = Box::pin(#[coroutine] move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
             // If the tenant exists, check if it has a table with the given id,
@@ -1307,7 +1309,7 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a generator for this request.
-        let gen = Box::pin(move || {
+        let gen = Box::pin(#[coroutine] move || {
             let mut n_recs: u32 = 0;
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
             let optype: u8 = 0x1;
@@ -1612,7 +1614,7 @@ impl Master {
                 ));
                 // TODO: This used to be a generator/coroutine. Replace with a stub closure for now.
                 let gen: Pin<Box<dyn FnMut() -> u64>> = Box::pin(|| 0u64);
-                let _ = ext.get(Rc::clone(&db) as Rc<DB>, gen);
+                let _ = ext.get(Rc::clone(&db) as Rc<DB>);
 
                 return Ok(Box::new(Container::new(TaskPriority::REQUEST, db, gen)));
             }
@@ -1689,7 +1691,7 @@ impl Master {
         let alloc: *const Allocator = &self.heap;
 
         // Create a generator for this request.
-        let gen = Box::pin(move || {
+        let gen = Box::pin(#[coroutine] move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
             let _outcome =

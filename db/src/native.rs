@@ -14,6 +14,7 @@
  */
 
 use std::cell::Cell;
+use std::ops::Generator;
 use std::pin::Pin;
 
 use super::cycles;
