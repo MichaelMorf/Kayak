@@ -15,15 +15,11 @@
 
 //! This crate is useful in writing a new client and handling pushback
 //! extension on the client side.
-#![feature(coroutines, yield_expr)]
 #![allow(bare_trait_objects)]
 #![warn(missing_docs)]
 
 extern crate libloading;
 extern crate sandstorm;
-extern crate serde;
-use serde::{Serialize, Deserialize};
-extern crate bincode;
 extern crate crypto;
 extern crate hashbrown;
 extern crate spin;
