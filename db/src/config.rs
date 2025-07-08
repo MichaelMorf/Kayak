@@ -17,6 +17,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs::File;
 use std::io::Read;
+use serde::{Serialize, Deserialize};
 
 use super::e2d2::headers::*;
 use super::toml;
@@ -88,7 +89,7 @@ fn load_config_cl(filename: &str) -> ClientConfig {
 /// Normally this config is recovered from a server.toml file (an example of which is in
 /// server.toml-example). If this file is malformed or missing, the server will typically
 /// crash when it cannot determine a MAC address to bind to.
-#[derive(Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct ServerConfig {
     /// Server MAC Address.
     mac_address: String,
@@ -138,7 +139,7 @@ impl ServerConfig {
 /// Normally this config is recovered from a client.toml file (an example of which is in
 /// client.toml-example). If this file is malformed or missing, the client will typically
 /// crash when it cannot determine a MAC address to bind to.
-#[derive(Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct ClientConfig {
     /// Client MAC Address.
     mac_address: String,

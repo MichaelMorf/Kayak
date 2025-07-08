@@ -98,7 +98,7 @@ impl Task for Native {
             self.state = RUNNING;
 
             // Execute the closure and store the result
-            if let Some(result) = (self.gen.as_mut())() {
+            if let Some(result) = self.gen.as_mut().get_mut()() {
                 self.res.set(Some(result));
                 self.state = COMPLETED;
             } else {

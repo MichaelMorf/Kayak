@@ -814,9 +814,9 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take().and_then(| tenant | {
+                tenant.take().and_then(| tenant_arc | {
                                 status = RpcStatus::StatusTableDoesNotExist;
-                                tenant.get_table(table_id)
+                                tenant_arc.get_table(table_id)
                             })
                 // If the table exists, lookup the provided key, and update
                 // the status of the rpc.
@@ -1092,9 +1092,9 @@ impl Master {
 
             // If the tenant exists, check if it has a table with the given id,
             // and update the status of the rpc.
-            let outcome = tenant.take().and_then(|tenant| {
+            let outcome = tenant.take().and_then(|tenant_arc| {
                 status = RpcStatus::StatusTableDoesNotExist;
-                tenant.get_table(table_id)
+                tenant_arc.get_table(table_id)
             });
 
             // If the table exists, update the status of the rpc, and allocate an
@@ -1314,9 +1314,9 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take().and_then(| tenant | {
+                tenant.take().and_then(| tenant_arc | {
                                 status = RpcStatus::StatusTableDoesNotExist;
-                                tenant.get_table(table_id)
+                                tenant_arc.get_table(table_id)
                             });
 
             // If the table exists, then lookup the keys in the database.

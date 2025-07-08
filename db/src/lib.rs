@@ -20,6 +20,7 @@
 
 extern crate libloading;
 extern crate sandstorm;
+extern crate serde;
 extern crate crypto;
 extern crate hashbrown;
 extern crate spin;
