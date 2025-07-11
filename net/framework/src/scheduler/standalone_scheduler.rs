@@ -47,7 +47,7 @@ pub struct StandaloneScheduler {
 /// Messages that can be sent on the scheduler channel to add or remove tasks.
 pub enum SchedulerCommand {
     Add(Box<dyn Executable + Send>),
-    Run(Arc<Fn(&mut StandaloneScheduler) + Send + Sync>),
+    Run(Arc<dyn Fn(&mut StandaloneScheduler) + Send + Sync>),
     Execute,
     Shutdown,
     Handshake(SyncSender<bool>),
