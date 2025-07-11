@@ -68,12 +68,27 @@ pub fn cycles_per_second() -> u64 {
     }
 }
 
-/// Return a 64-bit timestamp using the rdtsc instruction.
-#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+/// Returns the current time in cycles.
+#[inline]
 pub fn rdtsc() -> u64 {
+    let mut a: u32 = 0;
+    let mut d: u32 = 0;
     unsafe {
-        panic!("rdtsc not implemented");
+        asm!("rdtsc" : "={eax}" (a), "={edx}" (d));
     }
+    ((d as u64) << 32) | (a as u64)
+}
+
+/// Returns the current time in cycles. This is a serializing instruction.
+#[inline]
+pub fn rdtscp() -> u64 {
+    let mut a: u32 = 0;
+    let mut d: u32 = 0;
+    let mut c: u32 = 0;
+    unsafe {
+        asm!("rdtscp" : "={eax}" (a), "={edx}" (d), "={ecx}"(c));
+    }
+    ((d as u64) << 32) | (a as u64)
 }
 
 /// Converts the number of CPU cycles to seconds.

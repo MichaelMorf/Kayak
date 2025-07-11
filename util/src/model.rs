@@ -13,7 +13,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-use bincode::{deserialize, serialize};
 use hashbrown::HashMap;
 // Rustlearn imports disabled due to compatibility issues with serde
 // ML functionality is stubbed out to allow the project to build
@@ -23,8 +22,7 @@ use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::str::FromStr;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 /// Return a 64-bit timestamp using the rdtsc instruction.
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

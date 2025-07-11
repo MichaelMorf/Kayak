@@ -814,68 +814,40 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take().and_then(|tenant_opt| tenant_opt.and_then(| tenant_arc | {
-                                status = RpcStatus::StatusTableDoesNotExist;
-                                tenant_arc.get_table(table_id)
-                            }))
+                tenant.take().and_then(|tenant_opt| {
+                    tenant_opt.and_then(|tenant_arc| {
+                        status = RpcStatus::StatusTableDoesNotExist;
+                        tenant_arc.get_table(table_id)
+                    })
+                })
                 // If the table exists, lookup the provided key, and update
                 // the status of the rpc.
-                .and_then(| table | {
-                                status = RpcStatus::StatusObjectDoesNotExist;
-                                let (key, _) = req.get_payload().split_at(key_length as usize);
-                                table.get(key)
-                            })
+                .and_then(|table| {
+                    status = RpcStatus::StatusObjectDoesNotExist;
+                    let (key, _) = req.get_payload().split_at(key_length as usize);
+                    table.get(key)
+                })
                 // If the lookup succeeded, obtain the value, and update the
                 // status of the rpc.
-                .and_then(| entry | {
-                                status = RpcStatus::StatusInternalError;
-                                let alloc: &Allocator = accessor(alloc);
-                                Some((alloc.resolve(entry.value), entry.version))
-                            })
-                // If the value was obtained, then write to the response packet
-                // and update the status of the rpc.
-                .and_then(| (opt, version) | {
-                    if let Some(opt) = opt {
-                                let (k, value): &(&Vec<u8>, &Vec<u8>) = &opt;
-                                status = RpcStatus::StatusInternalError;
-                                let _result = res.add_to_payload_tail(1, pack(&optype));
-                                let _ = res.add_to_payload_tail(size_of::<Version>(), &unsafe { transmute::<Version, [u8; 8]>(version) });
-                                let result = res.add_to_payload_tail(k.len(), &k[..]);
-                                match result {
-                                    Ok(()) => {
-                                        res.add_to_payload_tail(value.len(), &value[..]).ok()
-                                    }
+                .map(|opt| {
+                    status = RpcStatus::StatusOk;
+                    let (k, value) = opt;
+                    let val_len = value.len();
 
-                                    Err(_) => {
-                                        Some(())
-                                    }
-                                }
-                            } else {
-                                None
-                            }
-                            })
-                // If the value was written to the response payload,
-                // update the status of the rpc.
-                .and_then(| _ | {
-                                status = RpcStatus::StatusOk;
-                                Some(())
-                            });
+                    // Copy the value into the response packet.
+                    res.get_mut_payload()
+                        .split_at_mut(val_len)
+                        .0
+                        .copy_from_slice(value.as_ref());
 
-            match outcome {
-                // The RPC completed successfully. Update the response header with
-                // the status and value length.
-                Some(()) => {
-                    let val_len = res.get_payload().len() as u32;
+                    // Set the length of the value in the response header.
+                    res.get_mut_header().val_length = val_len as u16;
+                    (k, value)
+                });
 
-                    let hdr: &mut GetResponse = res.get_mut_header();
-                    hdr.value_length = val_len;
-                    hdr.common_header.status = status;
-                }
-
-                // The RPC failed. Update the response header with the status.
-                None => {
-                    res.get_mut_header().common_header.status = status;
-                }
+            // Based on the outcome of the lookup, set the status of the RPC.
+            if outcome.is_none() {
+                res.get_mut_header().common_header.status = status;
             }
 
             // Deparse request and response packets down to UDP, and return from the closure.
@@ -1087,8 +1059,10 @@ impl Master {
 
         // Create a closure for this request.
         let mut tenant = Some(tenant);
+        let mut req = Some(req);
         let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
+            let optype: u8 = 0x2; // OpType::SandstormWrite
 
             let outcome = tenant.take().and_then(|tenant_opt| {
                 tenant_opt.and_then(|tenant_arc| {
@@ -1100,33 +1074,19 @@ impl Master {
             // If the table exists, update the status of the rpc, and allocate an
             // object.
             if let Some(table) = outcome {
-                // Get a reference to the key and value.
-                status = RpcStatus::StatusMalformedRequest;
+                status = RpcStatus::StatusOk;
+                let req = req.take().unwrap();
                 let (key, val) = req.get_payload().split_at(key_length as usize);
-
-                // If there is a value, then write it in.
-                if val.len() > 0 {
-                    status = RpcStatus::StatusInternalError;
-                    let alloc: &Allocator = accessor(alloc);
-                    let _result = alloc
-                        .object(tenant_id, table_id, key, val)
-                        // If the allocation succeeds, update the
-                        // status of the rpc, and insert the object
-                        // into the table.
-                        .and_then(|(key, obj)| {
-                            status = RpcStatus::StatusOk;
-                            table.put(key, obj);
-                            Some(())
-                        });
-                }
+                let obj = unsafe { (*alloc).object(tenant_id, table_id, key, val) };
+                table.put(obj.unwrap().0, obj.unwrap().1);
             }
 
-            // Update the response header.
+            // Set the status of the rpc.
             res.get_mut_header().common_header.status = status;
 
-            // Deparse request and response packets to UDP, and return from the closure.
+            // Return the packets.
             Some((
-                req.deparse_header(PACKET_UDP_LEN as usize),
+                req.take().unwrap().deparse_header(PACKET_UDP_LEN as usize),
                 res.deparse_header(PACKET_UDP_LEN as usize),
             ))
         });
@@ -1699,9 +1659,10 @@ impl Master {
                                 status = RpcStatus::StatusMalformedRequest;
                                 None
                             } else {
-                                let record = &req.get_payload()[..record_len];
+                                let record = &req.get_payload()[0..record_len];
+                                let records = table.get_all();
                                 status = RpcStatus::StatusOk;
-                                table.get_all_with_record(record)
+                                Some(records)
                             }
                         } else {
                             status = RpcStatus::StatusTableDoesNotExist;
@@ -1716,6 +1677,7 @@ impl Master {
                     None
                 };
 
+            // Set the status of the rpc.
             res.get_mut_header().common_header.status = status;
 
             // Deparse request and response packets down to UDP, and return from the closure.
