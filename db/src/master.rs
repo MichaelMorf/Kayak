@@ -1832,7 +1832,7 @@ impl Service for Master {
         req: Packet<UdpHeader, EmptyMetadata>,
         res: Packet<UdpHeader, EmptyMetadata>,
     ) -> Result<
-        Box<Task>,
+        Box<dyn Task>,
         (
             Packet<UdpHeader, EmptyMetadata>,
             Packet<UdpHeader, EmptyMetadata>,
@@ -1871,7 +1871,7 @@ impl Service for Master {
         req: Packet<UdpHeader, EmptyMetadata>,
         res: Packet<UdpHeader, EmptyMetadata>,
     ) -> Result<
-        Box<Task>,
+        Box<dyn Task>,
         (
             Packet<UdpHeader, EmptyMetadata>,
             Packet<UdpHeader, EmptyMetadata>,
