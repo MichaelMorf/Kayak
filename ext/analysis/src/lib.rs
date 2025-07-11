@@ -16,16 +16,12 @@
 #![crate_type = "dylib"]
 // Disable this because rustc complains about no_mangle being unsafe
 //#![forbid(unsafe_code)]
-#![feature(generators, generator_trait)]
-#![allow(bare_trait_objects)]
 
 extern crate bincode;
 extern crate rustlearn;
 #[macro_use]
 extern crate sandstorm;
 
-use std::ops::Generator;
-use std::pin::Pin;
 use std::rc::Rc;
 
 use rustlearn::prelude::*;
@@ -43,115 +39,103 @@ use sandstorm::pack::pack;
 ///
 /// # Return
 ///
-/// A coroutine that can be run inside the database.
+/// Returns 0 on success, 1 on error.
 #[no_mangle]
-#[allow(unreachable_code)]
-#[allow(unused_assignments)]
-pub fn init(db: Rc<DB>) -> Pin<Box<Generator<Yield = u64, Return = u64>>> {
-    Box::pin(move || {
-        let mut obj = None;
-        let mut table: u64 = 0;
-        let mut key_value: u32 = 0;
-        let mut number: u32 = 0;
-        let mut keys: Vec<u8> = Vec::with_capacity(30);
-        let mut values: Vec<Vec<u8>> = Vec::new();
-        let mut ml_model: u8 = 0;
-
-        {
-            // First off, retrieve the arguments to the extension.
-            let args = db.args();
-
-            // Check that the arguments received is long enough to contain an
-            // 8 byte table id and a key to be looked up. If not, then write
-            // an error message to the response and return to the database.
-            if args.len() <= 38 {
-                let error = "Invalid args";
+pub fn init(db: Rc<dyn DB>) -> u64 {
+    let mut obj = None;
+    let mut table: u64 = 0;
+    let mut key_value: u32 = 0;
+    let mut number: u32 = 0;
+    let mut keys: Vec<u8> = Vec::with_capacity(30);
+    let mut values: Vec<Vec<u8>> = Vec::new();
+    let mut ml_model: u8 = 0;
+    {
+        // First off, retrieve the arguments to the extension.
+        let args = db.args();
+        // Check that the arguments received is long enough to contain an
+        // 8 byte table id and a key to be looked up. If not, then write
+        // an error message to the response and return to the database.
+        if args.len() <= 38 {
+            let error = "Invalid args";
+            db.resp(error.as_bytes());
+            return 1;
+        }
+        // Next, split the arguments into a view over the table identifier
+        // (first eight bytes), and a view over the key to be looked up.
+        // De-serialize the table identifier into a u64.
+        let (stable, remaining) = args.split_at(8);
+        let (num, remaining) = remaining.split_at(4);
+        let (model, key) = remaining.split_at(1);
+        ml_model = 0 | model[0] as u8;
+        keys.extend_from_slice(key);
+        for (idx, e) in stable.iter().enumerate() {
+            table |= (*e as u64) << (idx << 3);
+        }
+        for (idx, e) in num.iter().enumerate() {
+            number |= (*e as u32) << (idx << 3);
+        }
+        for (idx, e) in key[0..4].iter().enumerate() {
+            key_value |= (*e as u32) << (idx << 3);
+        }
+    }
+    // Finally, lookup the database for the object.
+    for _i in 0..number {
+        // Replace GET! macro with direct logic
+        let (server, _, val) = db.search_get_in_cache(table, &keys);
+        if !server {
+            obj = val;
+        } else {
+            obj = db.get(table, &keys);
+        }
+        match obj {
+            Some(val) => {
+                values.push(val.read().clone().to_vec());
+            }
+            None => {
+                let error = "Object does not exist";
                 db.resp(error.as_bytes());
-                return 1;
-            }
-
-            // Next, split the arguments into a view over the table identifier
-            // (first eight bytes), and a view over the key to be looked up.
-            // De-serialize the table identifier into a u64.
-            let (stable, remaining) = args.split_at(8);
-            let (num, remaining) = remaining.split_at(4);
-            let (model, key) = remaining.split_at(1);
-            ml_model = 0 | model[0] as u8;
-            keys.extend_from_slice(key);
-
-            for (idx, e) in stable.iter().enumerate() {
-                table |= (*e as u64) << (idx << 3);
-            }
-
-            for (idx, e) in num.iter().enumerate() {
-                number |= (*e as u32) << (idx << 3);
-            }
-
-            for (idx, e) in key[0..4].iter().enumerate() {
-                key_value |= (*e as u32) << (idx << 3);
+                return 0;
             }
         }
-
-        // Finally, lookup the database for the object.
-        for _i in 0..number {
-            GET!(db, table, keys, obj);
-            match obj {
-                Some(val) => {
-                    values.push(val.read().clone().to_vec());
+        key_value += 1;
+        keys[0..4].copy_from_slice(&transform_u32_to_u8_slice(key_value));
+    }
+    // If the object was found, perform the classification on the object and write it
+    // to the response.
+    for value in values.iter() {
+        match db.get_model() {
+            Some(model) => {
+                let mut response: f32 = 0.0;
+                let predict: Vec<f32> = bincode::deserialize(&value).unwrap();
+                if ml_model == 1 {
+                    response = model
+                        .lr_deserialized
+                        .predict(&Array::from(&vec![predict]))
+                        .unwrap()
+                        .data()[0];
+                } else if ml_model == 2 {
+                    response = model
+                        .dr_deserialized
+                        .predict(&Array::from(&vec![predict]))
+                        .unwrap()
+                        .data()[0];
+                } else if ml_model == 3 {
+                    response = model
+                        .rf_deserialized
+                        .predict(&Array::from(&vec![predict]))
+                        .unwrap()
+                        .data()[0];
                 }
-
-                None => {
-                    let error = "Object does not exist";
-                    db.resp(error.as_bytes());
-                    return 0;
-                }
+                db.resp(pack(&response));
             }
-
-            key_value += 1;
-            keys[0..4].copy_from_slice(&transform_u32_to_u8_slice(key_value));
-        }
-        // Deserialize took some CPU compute and the extension should yield to
-        // avoid as classified as misbehaving extension.
-        yield 0;
-
-        // If the object was found, perform the classification on the object and write it
-        // to the response.
-        for value in values.iter() {
-            match db.get_model() {
-                Some(model) => {
-                    let mut response: f32 = 0.0;
-                    let predict: Vec<f32> = bincode::deserialize(&value).unwrap();
-                    if ml_model == 1 {
-                        response = model
-                            .lr_deserialized
-                            .predict(&Array::from(&vec![predict]))
-                            .unwrap()
-                            .data()[0];
-                    } else if ml_model == 2 {
-                        response = model
-                            .dr_deserialized
-                            .predict(&Array::from(&vec![predict]))
-                            .unwrap()
-                            .data()[0];
-                    } else if ml_model == 3 {
-                        response = model
-                            .rf_deserialized
-                            .predict(&Array::from(&vec![predict]))
-                            .unwrap()
-                            .data()[0];
-                    }
-                    db.resp(pack(&response));
-                }
-
-                None => {
-                    let error = "ML Model does not exist";
-                    db.resp(error.as_bytes());
-                    return 0;
-                }
+            None => {
+                let error = "ML Model does not exist";
+                db.resp(error.as_bytes());
+                return 0;
             }
         }
-        return 0;
-    })
+    }
+    0
 }
 
 fn transform_u32_to_u8_slice(x: u32) -> [u8; 4] {
