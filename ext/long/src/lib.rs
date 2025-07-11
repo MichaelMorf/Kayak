@@ -32,7 +32,8 @@ use sandstorm::db::DB;
 /// Returns 0 on success, 1 on error.
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
-    for i in 0u16..128u16 {
+    let mut _i = 0u16;
+    for _i in 0u16..128u16 {
         let mut _y_n = 0; // Prefix with _ to silence unused variable warning
         let mut _obj = None; // Prefix with _ to silence unused assignment warning
         {

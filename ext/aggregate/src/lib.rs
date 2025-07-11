@@ -15,7 +15,7 @@
 
 extern crate sandstorm;
 
-use sandstorm::buf::{MultiReadBuf, ReadBuf};
+use sandstorm::buf::{MultiReadBuf};
 use sandstorm::db::DB;
 use sandstorm::pack::pack;
 use sandstorm::rc::Rc;

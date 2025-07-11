@@ -27,8 +27,10 @@ use sandstorm::pack::pack;
 use sandstorm::rc::Rc;
 use sandstorm::size_of;
 
+#[allow(dead_code)]
 /// Status codes for the response to the tenant.
 const SUCCESSFUL: u8 = 0x01;
+#[allow(dead_code)]
 const INVALIDARG: u8 = 0x02;
 const INVALIDKEY: u8 = 0x03;
 
@@ -73,9 +75,9 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
     let mut num: u32 = 0;
     let mut aggr: u64 = 0;
     let mut buf: Option<MultiReadBuf> = None;
-    let mut err: u8;
-    let mut optype: u8;
-    let mut obj: Option<ReadBuf>;
+    let err: u8;
+    let optype: u8;
+    let obj: Option<ReadBuf>;
     {
         let arg: &[u8] = db.args();
         let (t, rem) = arg.split_at(size_of::<u64>());

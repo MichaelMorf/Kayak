@@ -54,6 +54,7 @@ use zipf::ZipfDistribution;
 static mut FINISHED: bool = false;
 
 // Flag to indicate that the client can generate Compute Request based on some distribution.
+#[allow(dead_code)]
 static mut ORD_DIST: bool = false;
 static ORDER: f64 = 2500.0;
 static STD_DEV: f64 = 500.0;
@@ -205,33 +206,15 @@ where
 
     // If true, RPC requests corresponding to native get() and put() operations are sent out. If
     // false, invoke() based RPC requests are sent out.
+    #[allow(dead_code)]
     native: bool,
 
-    max_out: f32,
-
-    // Payload for an invoke() based get operation. Required in order to avoid making intermediate
-    // copies of the extension name, table id, and key.
-    payload_pushback: RefCell<Vec<u8>>,
-
-    // Payload for an invoke() based put operation. Required in order to avoid making intermediate
-    // copies of the extension name, table id, key length, key, and value.
-    payload_put: RefCell<Vec<u8>>,
-
-    // Flag to indicate if the procedure is finished or not.
-    finished: bool,
-
-    // To keep the mapping between sent and received packets. The client doesn't want to send
-    // more than 32(XXX) outstanding packets.
-    outstanding: u64,
-
-    // To keep a mapping between each packet and request parameters. This information will be used
-    // when the server pushes back the extension.
-    manager: RefCell<TaskManager>,
-
-    // Keeps track of the state of a multi-operation request. For example, an extension performs
-    // four get operations before performing aggregation and all these get operations are dependent
-    // on the previous value.
-    native_state: RefCell<HashMap<u64, PushbackState>>,
+    #[allow(dead_code)]
+    last_op: i32,
+    #[allow(dead_code)]
+    rloop_last_out: f32,
+    #[allow(dead_code)]
+    rloop_last_kth: u64,
 
     /// Number of keys to aggregate across. Required for the native case.
     num: u32,
@@ -247,18 +230,6 @@ where
     rloop_factor: usize,
     xloop_factor: usize,
     slo: u64,
-
-    last_op: i32,
-    xloop_last_recvd: u64,
-    xloop_last_rdtsc: u64,
-    xloop_last_rate: f32,
-    xloop_last_x: f32,
-
-
-    rloop_last_recvd: u64,
-    rloop_last_rdtsc: u64,
-    rloop_last_out: f32,
-    rloop_last_kth: u64,
 
     kth: u64,
 
@@ -515,10 +486,9 @@ where
                     _ => {}
                 }
 
-                /// Removed the condition is_native
+                // The response corresponds to an invoke() RPC.
                 {
                     match parse_rpc_opcode(&packet) {
-                        // The response corresponds to an invoke() RPC.
                         OpCode::SandstormInvokeRpc => {
                             let p = packet.parse_header::<InvokeResponse>();
                             match p.get_header().common_header.status {
@@ -558,8 +528,6 @@ where
                             }
                             p.free_packet();
                         }
-
-                        // _ => packet.free_packet(),
 
                         OpCode::SandstormGetRpc => {
                             let p = packet.parse_header::<GetResponse>();

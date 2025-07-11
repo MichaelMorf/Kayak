@@ -1912,7 +1912,7 @@ impl Service for Master {
                        Packet<UdpHeader, EmptyMetadata>,
         ),
         (
-            Packet<UdpHeader, EmptyMetadata>,
+            Packet<UdpHeader>,
             Packet<UdpHeader, EmptyMetadata>,
         ),
     > {

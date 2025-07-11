@@ -23,7 +23,6 @@ use core::arch::asm;
 use std::rc::Rc;
 
 use sandstorm::db::DB;
-use sandstorm::Pin;
 
 /// Return a 64-bit timestamp using the rdtsc instruction.
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]

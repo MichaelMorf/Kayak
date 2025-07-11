@@ -183,7 +183,9 @@ where
     ext_p: f32,
 
     // Finer latency measurements
+    #[allow(dead_code)]
     inv_lats: Vec<u64>,
+    #[allow(dead_code)]
     nat_lats: Vec<u64>,
 
     /// max allowed outstanding packets
@@ -195,6 +197,7 @@ where
 
     kth: u64,
 
+    #[allow(dead_code)]
     last_op: i32,
     xloop_last_recvd: u64,
     xloop_last_rdtsc: u64,
@@ -208,7 +211,9 @@ where
     rloop_last_kth: u64,
 
     /// These 2 var is just for exchange info between slow and fast loop
+    #[allow(dead_code)]
     rate: i64,
+    #[allow(dead_code)]
     d_rate: i64,
 
     // If true, this receiver will make latency measurements.
