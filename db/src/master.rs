@@ -47,9 +47,7 @@ use e2d2::interface::Packet;
 use spin::RwLock;
 
 use sandstorm::common::{TableId, TenantId, PACKET_UDP_LEN};
-use sandstorm::db::DB;
 use sandstorm::ext::*;
-use sandstorm::pack::pack;
 use sandstorm::{LittleEndian, ReadBytesExt};
 
 /// Convert a raw pointer for Allocator into a Allocator reference. This can be used to pass
@@ -118,10 +116,10 @@ impl Master {
         // Allocate objects, and fill up the above table. Each object consists of a 30 Byte key
         // and a 100 Byte value.
         for i in 1..(num + 1) {
-            let value: [u8; 4] = unsafe { transmute(((i + 1) % (num + 1)).to_le()) };
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &key[0..4].copy_from_slice(&temp);
-            &val[0..4].copy_from_slice(&value);
+            let value: [u8; 4] = 255u32.to_le_bytes();
+            let temp: [u8; 4] = i.to_le_bytes();
+            let _ = key[0..4].copy_from_slice(&temp);
+            let _ = val[0..4].copy_from_slice(&value);
 
             let obj = self
                 .heap
@@ -160,7 +158,7 @@ impl Master {
         // Setup the object table with num objects.
         for i in 1..(num + 1) {
             let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &key[0..4].copy_from_slice(&temp);
+            let _ = key[0..4].copy_from_slice(&temp);
 
             let obj = self
                 .heap
@@ -182,14 +180,14 @@ impl Master {
         // neighbours.
         for i in 1..(num + 1) {
             let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &key[0..4].copy_from_slice(&temp);
+            let _ = key[0..4].copy_from_slice(&temp);
 
             // Assoc list for this particular object.
             let mut list: Vec<u8> = Vec::new();
 
             for a in 1u32..5u32 {
                 let temp: [u8; 4] = unsafe { transmute(((i + a) % num).to_le()) };
-                &key[10..14].copy_from_slice(&temp);
+                let _ = key[10..14].copy_from_slice(&temp);
                 list.extend_from_slice(&temp);
                 list.extend_from_slice(&[0; 12]);
 
@@ -249,12 +247,12 @@ impl Master {
             let mut val = vec![];
 
             let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &key[0..4].copy_from_slice(&temp);
+            let _ = key[0..4].copy_from_slice(&temp);
 
             for e in 0..N_AGG {
                 let mut k = vec![0; K_LEN as usize];
                 let t: [u8; 4] = unsafe { transmute(((i * N_AGG + e) % records).to_le()) };
-                &k[0..4].copy_from_slice(&t);
+                let _ = k[0..4].copy_from_slice(&t);
 
                 val.extend_from_slice(&k);
             }
@@ -272,8 +270,8 @@ impl Master {
             let mut val = vec![0; V_LEN as usize];
 
             let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &key[0..4].copy_from_slice(&temp);
-            &val[0..4].copy_from_slice(&temp);
+            let _ = key[0..4].copy_from_slice(&temp);
+            let _ = val[0..4].copy_from_slice(&temp);
 
             let obj = self
                 .heap
@@ -317,7 +315,7 @@ impl Master {
             for (row, line) in data.lines().enumerate() {
                 // Prepare the key for the record.
                 let temp: [u8; 4] = unsafe { transmute(((row + 1) as u32).to_le()) };
-                &key[0..4].copy_from_slice(&temp);
+                let _ = key[0..4].copy_from_slice(&temp);
 
                 // Prepare the value for the record.
                 let mut value: Vec<f32> = Vec::new();
@@ -366,14 +364,14 @@ impl Master {
         // and a 40 Byte value(24 byte HASH followed by 16 byte SALT).
         for i in 1..(num + 1) {
             let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &username[0..4].copy_from_slice(&temp);
-            &password[0..4].copy_from_slice(&temp);
-            &hash_salt[24..28].copy_from_slice(&temp);
-            &salt[0..4].copy_from_slice(&temp);
+            let _ = username[0..4].copy_from_slice(&temp);
+            let _ = password[0..4].copy_from_slice(&temp);
+            let _ = hash_salt[24..28].copy_from_slice(&temp);
+            let _ = salt[0..4].copy_from_slice(&temp);
 
             let output: &mut [u8] = &mut [0; 24];
             bcrypt(1, &salt, &password, output);
-            &hash_salt[0..24].copy_from_slice(&output);
+            let _ = hash_salt[0..24].copy_from_slice(&output);
 
             // Add a mapping of the username and (HASH+SALT) in the table.
             let obj = self
@@ -432,7 +430,7 @@ impl Master {
             // Setup the object table with num objects.
             for i in 1..(num + 1) {
                 let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-                &key[0..4].copy_from_slice(&temp);
+                let _ = key[0..4].copy_from_slice(&temp);
 
                 let obj = self
                     .heap
@@ -456,14 +454,14 @@ impl Master {
             // neighbours.
             for i in 1..(num + 1) {
                 let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-                &key[0..4].copy_from_slice(&temp);
+                let _ = key[0..4].copy_from_slice(&temp);
 
                 // Assoc list for this particular object.
                 let mut list: Vec<u8> = Vec::new();
 
                 for a in 1u32..5u32 {
                     let temp: [u8; 4] = unsafe { transmute(((i + a) % num).to_le()) };
-                    &key[10..14].copy_from_slice(&temp);
+                    let _ = key[10..14].copy_from_slice(&temp);
                     list.extend_from_slice(&temp);
                     list.extend_from_slice(&[0; 12]);
 
@@ -492,7 +490,7 @@ impl Master {
             for (row, line) in data.lines().enumerate() {
                 // Prepare the key for the record.
                 let temp: [u8; 4] = unsafe { transmute(((row + 1) as u32).to_le()) };
-                &key[0..4].copy_from_slice(&temp);
+                let _ = key[0..4].copy_from_slice(&temp);
 
                 // Prepare the value for the record.
                 let mut value: Vec<f32> = Vec::new();
@@ -537,10 +535,10 @@ impl Master {
         // Allocate objects, and fill up the above table. Each object consists of a 30 Byte key
         // and a 100 Byte value.
         for i in 1..(num + 1) {
-            let value: [u8; 4] = unsafe { transmute(255u32.to_le()) };
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-            &key[0..4].copy_from_slice(&temp);
-            &val[0..4].copy_from_slice(&value);
+            let value: [u8; 4] = 255u32.to_le_bytes();
+            let temp: [u8; 4] = i.to_le_bytes();
+            let _ = key[0..4].copy_from_slice(&temp);
+            let _ = val[0..4].copy_from_slice(&value);
 
             let obj = self
                 .heap
@@ -553,7 +551,7 @@ impl Master {
         self.insert_tenant(tenant);
     }
 
-    /// Loads the get(), put(), tao(), and bad() extensions.
+    /// Loads the get() extension.
     ///
     /// # Arguments
     ///
@@ -1904,7 +1902,7 @@ impl Service for Master {
 
             OpCode::SandstormPutRpc => {
                 return self.put_native(req, res);
-            }
+                       }
 
             OpCode::SandstormMultiGetRpc => {
                 return self.multiget_native(req, res);

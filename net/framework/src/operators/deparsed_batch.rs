@@ -4,7 +4,6 @@ use super::iterator::*;
 use super::packet_batch::PacketBatch;
 use crate::common::*;
 use crate::headers::EndOffset;
-use crate::interface::*;
 
 pub struct DeparsedBatch<V>
 where
