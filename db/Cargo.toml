@@ -45,6 +45,7 @@ rust-crypto  = "0.2.36"
 sandstorm    = {path = "../sandstorm"}
 e2d2         = {path = "../net/framework"}
 util         = {path = "../util"}
+bytemuck      = "1.14"
 
 # Add feature name in default features to enable cyclecounter for the given stage,
 # where stage name can be ["dispatch", "execution"].

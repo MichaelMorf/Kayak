@@ -49,6 +49,7 @@ use spin::RwLock;
 use sandstorm::common::{TableId, TenantId, PACKET_UDP_LEN};
 use sandstorm::ext::*;
 use sandstorm::{LittleEndian, ReadBytesExt};
+use bytemuck::cast;
 
 /// Convert a raw pointer for Allocator into a Allocator reference. This can be used to pass
 /// the allocator reference across closures without cloning the allocator object.
@@ -1683,7 +1684,7 @@ impl Master {
                                 let (optype, rem) = record.split_at(1);
                                 let (mut version, rem) = rem.split_at(8);
                                 let (key, value) = rem.split_at(key_len);
-                                let version: Version = unsafe { transmute(version.read_u64::<LittleEndian>().unwrap()) };
+                                let version = Version(version.read_u64::<LittleEndian>().unwrap());
                                 match parse_record_optype(optype) {
                                     OpType::SandstormRead => {
                                         tx.record_get(Record::new(OpType::SandstormRead, version, Bytes::from(key), Bytes::from(value)));
@@ -1814,7 +1815,7 @@ impl Master {
             }
         }
 
-        let res: [u8; size_of::<InstallResponse>()] = unsafe { transmute(res) };
+        let res: [u8; std::mem::size_of::<InstallResponse>()] = bytemuck::cast(res);
         let mut ret: Vec<u8> = Vec::new();
         ret.extend_from_slice(&res);
         return ret;
