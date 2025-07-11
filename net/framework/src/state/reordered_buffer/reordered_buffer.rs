@@ -31,7 +31,7 @@ struct Segment {
 impl Segment {
     pub fn new(idx: isize, seq: u32, length: u16) -> Segment {
         Segment {
-            idx: idx,
+            _idx: idx,
             prev: -1,
             next: -1,
             seq: seq,
