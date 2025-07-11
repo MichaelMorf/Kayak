@@ -79,7 +79,13 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
     }
     let mut mul: u64 = 0;
     for i in 0..num {
-        GET!(db, t_table, keys, obj);
+        // Replacing GET! macro with direct logic to avoid yield/coroutine issues
+        let (server, _, val) = db.search_get_in_cache(t_table, &keys);
+        if !server {
+            obj = val;
+        } else {
+            obj = db.get(t_table, &keys);
+        }
         if i == num - 1 {
             match obj {
                 // If the object was found, use the response.
