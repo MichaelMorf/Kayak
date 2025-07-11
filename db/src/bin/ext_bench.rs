@@ -13,10 +13,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-extern crate db;
-extern crate sandstorm;
-extern crate time;
-
 use std::rc::Rc;
 
 use db::cycles::*;
@@ -29,7 +25,7 @@ use sandstorm::null::NullDB;
 
 fn main() {
     // Create an extension manager and null db interface.
-    let db: Rc<dyn DB> = Rc::new(NullDB::new());
+    let _db: Rc<dyn DB> = Rc::new(NullDB::new()); // prefix with _ to silence unused variable warning
     let ext_manager = ExtensionManager::new();
 
     // Number of tiny TAO extensions that will be loaded and called into.
@@ -43,7 +39,7 @@ fn main() {
             0,
             &format!("test{}", i),
         );
-        if ret == false {
+        if !ret {
             panic!("Failed to load test extension!");
         }
     }
@@ -57,10 +53,10 @@ fn main() {
     // Next, call each extension once (no invocation possible, just test retrieval).
     let proc_names: Vec<String> = (0..n).map(|i| format!("test{}", i)).collect();
     for p in proc_names.iter() {
-        let _ext = ext_manager
+        let _ = ext_manager
             .get(0, p.as_str())
             .unwrap();
-        // Invocation removed: .get(Rc::clone(&db))
+        // Invocation removed: .get(Rc::clone(&_db))
         // ext.as_mut().resume(());
     }
 
@@ -74,7 +70,7 @@ fn main() {
     for _ in 0..1000000 {
         for p in proc_names.iter() {
             let l = rdtsc();
-            let _ext = ext_manager
+            let _ = ext_manager
                 .get(0, p.as_str())
                 .unwrap();
             let r = rdtsc();
@@ -89,18 +85,18 @@ fn main() {
     }
 
     let ret = ext_manager.load("../ext/test/target/release/libtest.so", 0, "test");
-    if ret == false {
+    if !ret {
         panic!("Failed to load test extension!");
     }
 
-    let _ext = ext_manager
+    let _ = ext_manager
         .get(0, "test")
         .unwrap();
     // .get(Rc::clone(&db));
     // while ext.as_mut().resume(()) != GeneratorState::Complete(0) {}
 
-    load.sort();
-    enter.sort();
+    load.sort_unstable();
+    enter.sort_unstable();
 
     let lm = load[load.len() / 2];
     let em = enter[enter.len() / 2];

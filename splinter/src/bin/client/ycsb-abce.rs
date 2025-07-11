@@ -241,7 +241,7 @@ where
         let payload_len = "get".as_bytes().len() + mem::size_of::<u64>() + config.key_len;
         let mut payload_get = Vec::with_capacity(payload_len);
         payload_get.extend_from_slice("get".as_bytes());
-        payload_get.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_get.extend_from_slice(&(1u64.to_le_bytes()));
         payload_get.resize(payload_len, 0);
 
         // The payload on an invoke() based put request consists of the extensions name ("put"),
@@ -254,10 +254,8 @@ where
             + config.value_len;
         let mut payload_put = Vec::with_capacity(payload_len);
         payload_put.extend_from_slice("put".as_bytes());
-        payload_put.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        payload_put.extend_from_slice(&unsafe {
-            transmute::<u16, [u8; 2]>((config.key_len as u16).to_le())
-        });
+        payload_put.extend_from_slice(&(1u64.to_le_bytes()));
+        payload_put.extend_from_slice(&((config.key_len as u16).to_le_bytes()));
         payload_put.resize(payload_len, 0);
 
         // Payload for an invoke() based range scan operation. Required in order to avoid making
@@ -269,8 +267,8 @@ where
             + config.key_len;
         let mut payload_scan = Vec::with_capacity(payload_len);
         payload_scan.extend_from_slice("scan".as_bytes());
-        payload_scan.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        payload_scan.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(range.to_le()) });
+        payload_scan.extend_from_slice(&(1u64.to_le_bytes()));
+        payload_scan.extend_from_slice(&(range.to_le_bytes()));
         payload_scan.resize(payload_len, 0);
 
         YcsbABCE {

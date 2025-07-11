@@ -280,9 +280,9 @@ where
             + config.key_len;
         let mut payload_pushback = Vec::with_capacity(payload_len);
         payload_pushback.extend_from_slice("pushback".as_bytes());
-        payload_pushback.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        payload_pushback.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(number.to_le()) });
-        payload_pushback.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(order.to_le()) });
+        payload_pushback.extend_from_slice(&(1u64.to_le_bytes()));
+        payload_pushback.extend_from_slice(&(number.to_le_bytes()));
+        payload_pushback.extend_from_slice(&(order.to_le_bytes()));
         payload_pushback.resize(payload_len, 0);
 
         // The payload on an invoke() based put request consists of the extensions name ("put"),
@@ -295,10 +295,8 @@ where
             + config.value_len;
         let mut payload_put = Vec::with_capacity(payload_len);
         payload_put.extend_from_slice("pushback".as_bytes());
-        payload_put.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        payload_put.extend_from_slice(&unsafe {
-            transmute::<u16, [u8; 2]>((config.key_len as u16).to_le())
-        });
+        payload_put.extend_from_slice(&(1u64.to_le_bytes()));
+        payload_put.extend_from_slice(&((config.key_len as u16).to_le_bytes()));
         payload_put.resize(payload_len, 0);
         PushbackRecvSend {
             receiver: dispatch::Receiver::new(rx_port),

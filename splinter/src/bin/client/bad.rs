@@ -190,7 +190,7 @@ impl BadSend {
         let payload_len = "get".as_bytes().len() + mem::size_of::<u64>() + config.key_len;
         let mut payload_get = Vec::with_capacity(payload_len);
         payload_get.extend_from_slice("get".as_bytes());
-        payload_get.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_get.extend_from_slice(&(1u64.to_le_bytes()));
         payload_get.resize(payload_len, 0);
 
         // The payload on an invoke() based bad request consists of the extensions name ("bad"),
@@ -198,7 +198,7 @@ impl BadSend {
         let payload_len = "bad".as_bytes().len() + mem::size_of::<u64>() + config.key_len;
         let mut payload_bad = Vec::with_capacity(payload_len);
         payload_bad.extend_from_slice("bad".as_bytes());
-        payload_bad.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_bad.extend_from_slice(&(1u64.to_le_bytes()));
         payload_bad.resize(payload_len, 0);
 
         BadSend {

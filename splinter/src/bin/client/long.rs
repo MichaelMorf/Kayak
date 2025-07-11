@@ -24,7 +24,6 @@ mod setup;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
 use std::sync::Arc;
 
 use db::config;
@@ -190,7 +189,7 @@ impl LongSend {
         let payload_len = "get".as_bytes().len() + mem::size_of::<u64>() + config.key_len;
         let mut payload_get = Vec::with_capacity(payload_len);
         payload_get.extend_from_slice("get".as_bytes());
-        payload_get.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_get.extend_from_slice(&(1u64.to_le_bytes()));
         payload_get.resize(payload_len, 0);
 
         // The payload on an invoke() based long request consists of the extensions name ("long"),
@@ -199,9 +198,9 @@ impl LongSend {
             "long".as_bytes().len() + mem::size_of::<u64>() + mem::size_of::<u8>() + config.key_len;
         let mut payload_long = Vec::with_capacity(payload_len);
         payload_long.extend_from_slice("long".as_bytes());
-        payload_long.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_long.extend_from_slice(&(1u64.to_le_bytes()));
         payload_long
-            .extend_from_slice(&unsafe { transmute::<u8, [u8; 1]>(config.yield_f.to_le()) });
+            .extend_from_slice(&[config.yield_f.to_le()]);
         payload_long.resize(payload_len, 0);
 
         LongSend {

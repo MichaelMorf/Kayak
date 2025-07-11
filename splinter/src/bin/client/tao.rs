@@ -152,8 +152,8 @@ impl TaoSendRecv {
 
         // Pre-populate the extension name, table id, and opcode.
         io_buff.extend_from_slice("tao".as_bytes());
-        io_buff.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        io_buff.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(0u64.to_le()) }); // placeholder for key
+        io_buff.extend_from_slice(&(1u64.to_le_bytes()));
+        io_buff.extend_from_slice(&(0u64.to_le_bytes())); // placeholder for key
         io_buff.extend_from_slice(&[0u8]);
         io_buff.resize(len, 0);
 
@@ -164,7 +164,7 @@ impl TaoSendRecv {
 
         // Pre-populate the extension name, opcode, and table id.
         ia_buff.extend_from_slice("tao".as_bytes());
-        ia_buff.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(2u64.to_le()) });
+        ia_buff.extend_from_slice(&(2u64.to_le_bytes()));
         ia_buff.extend_from_slice(&[0; 18]); // placeholder for id1 = 8, assoc_type = 2, id2 = 8.
         ia_buff.extend_from_slice(&[4u8]);
         ia_buff.resize(len, 0);
