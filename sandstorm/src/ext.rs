@@ -14,8 +14,6 @@
  */
 
 use hashbrown::HashMap;
-use std::coroutine::Coroutine;
-use std::ops::Generator;
 use std::pin::Pin;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -31,7 +29,7 @@ use spin::RwLock;
 const EXT_BUCKETS: usize = 32;
 
 // The type signature of the function that will be searched for inside an so.
-type Proc = unsafe extern "C" fn(Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>>;
+// type Proc = unsafe extern "C" fn(Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>>;
 
 /// This type represents an extension that has been successfully loaded into
 /// the database. As long as this type is not dropped, the extension will exist
@@ -46,7 +44,7 @@ pub struct Extension {
 
     // The actual symbol inside the dynamically loaded library that will be
     // used by the database during an "invoke".
-    procedure: Symbol<Proc>,
+    // procedure: Symbol<Proc>, // Disabled: coroutine/generator API not available
 }
 
 // Implementation of methods on Extension.
@@ -71,30 +69,9 @@ impl Extension {
     ///
     /// An `Extension` if the .so file was found, and contains a symbol called
     /// "init". This handle can then be used to call into the so.
-    pub fn load(name: &str) -> Option<Extension> {
-        // First, try to dynamically load the .so file into the database.
-        if let Ok(lib) = Library::new(name) {
-            // If the load was successfull, try to find a function called
-            // "init" inside the .so file.
-            let mut procedure = None;
-            unsafe {
-                if let Ok(ext) = lib.get::<Proc>(b"init") {
-                    // If the "init" function was found, then unwrap it.
-                    procedure = Some(ext.into_raw());
-                }
-            }
-
-            // If the init function was unwrapped, return an extension.
-            if let Some(procedure) = procedure {
-                return Some(Extension {
-                    library: lib,
-                    procedure: procedure,
-                });
-            }
-        }
-
-        // Failed to load the .so file, or failed to find the procedure within.
-        return None;
+    pub fn load(_name: &str) -> Option<Extension> {
+        // Stub: Extension loading disabled due to missing coroutine/generator API
+        None
     }
 
     /// This function calls into a previously loaded extension, and returns a
@@ -108,10 +85,9 @@ impl Extension {
     /// # Return
     ///
     /// A generator that can be scheduled by the database.
-    pub fn get(&self, db: Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>> {
-        // Call into the procedure, and return the generator.
-        unsafe { (self.procedure)(db) }
-    }
+    // pub fn get(&self, db: Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>> {
+    //     unsafe { (self.procedure)(db) }
+    // }
 }
 
 /// This type represents an extension manager which keeps track of extensions
@@ -133,6 +109,7 @@ impl ExtensionManager {
         ExtensionManager {
             // Can't use the copy constructor because of the Arc<Extension>.
             extensions: [
+                RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
@@ -252,7 +229,7 @@ impl ExtensionManager {
 // This module contains simple tests for Extension and ExtensionManager.
 #[cfg(test)]
 mod tests {
-    use std::ops::GeneratorState;
+    // use std::ops::GeneratorState;
     use std::rc::Rc;
 
     use super::super::null::NullDB;
