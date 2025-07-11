@@ -14,17 +14,10 @@
  */
 
 #![crate_type = "dylib"]
-// Disable this because rustc complains about no_mangle being unsafe
-//#![forbid(unsafe_code)]
-#![feature(generators, generator_trait)]
-#![allow(bare_trait_objects)]
 
 extern crate sandstorm;
 
-use std::ops::Generator;
-use std::pin::Pin;
 use std::rc::Rc;
-
 use sandstorm::db::DB;
 
 /// This function implements the get() extension using the sandstorm interface.
@@ -36,71 +29,61 @@ use sandstorm::db::DB;
 ///
 /// # Return
 ///
-/// A coroutine that can be run inside the database.
+/// Returns 0 on success, 1 on error.
 #[no_mangle]
-#[allow(unreachable_code)]
-#[allow(unused_assignments)]
-pub fn init(db: Rc<DB>) -> Pin<Box<Generator<Yield = u64, Return = u64>>> {
-    Box::pin(move || {
-        // Basically a get() extension times 32.
-        for i in 0u16..128u16 {
-            let mut y_n = 0;
-            let mut obj = None;
+pub fn init(db: Rc<dyn DB>) -> u64 {
+    for i in 0u16..128u16 {
+        let mut y_n = 0;
+        let mut obj = None;
+        {
+            // First off, retrieve the arguments to the extension.
+            let args = db.args();
 
-            {
-                // First off, retrieve the arguments to the extension.
-                let args = db.args();
-
-                // Check that the arguments received is long enough to contain an
-                // 8 byte table id and a key to be looked up. If not, then write
-                // an error message to the response and return to the database.
-                if args.len() <= 8 {
-                    let error = "Invalid args";
-                    db.resp(error.as_bytes());
-                    return 1;
-                }
-
-                // Next, split the arguments into a view over the table identifier
-                // (first eight bytes), and a view over the key to be looked up.
-                // De-serialize the table identifier into a u64.
-                let (table, val) = args.split_at(8);
-                let table: u64 =
-                    0 | table[0] as u64 | (table[1] as u64) << 8 | (table[2] as u64) << 16
-                        | (table[3] as u64) << 24 | (table[4] as u64) << 32
-                        | (table[5] as u64) << 40 | (table[6] as u64) << 48
-                        | (table[7] as u64) << 56;
-
-                // Next, retrieve the frequency at which we should yield.
-                let (y, key) = val.split_at(1);
-                y_n = y[0];
-
-                // Finally, lookup the database for the object.
-                obj = db.get(table, key);
+            // Check that the arguments received is long enough to contain an
+            // 8 byte table id and a key to be looked up. If not, then write
+            // an error message to the response and return to the database.
+            if args.len() <= 8 {
+                let error = "Invalid args";
+                db.resp(error.as_bytes());
+                return 1;
             }
 
-            // Populate a response to the tenant.
-            match obj {
-                // If the object was found, write it to the response.
-                Some(val) => {
-                    db.resp(val.read().split_at(8).0);
-                }
+            // Next, split the arguments into a view over the table identifier
+            // (first eight bytes), and a view over the key to be looked up.
+            // De-serialize the table identifier into a u64.
+            let (table, val) = args.split_at(8);
+            let table: u64 =
+                0 | table[0] as u64 | (table[1] as u64) << 8 | (table[2] as u64) << 16
+                    | (table[3] as u64) << 24 | (table[4] as u64) << 32
+                    | (table[5] as u64) << 40 | (table[6] as u64) << 48
+                    | (table[7] as u64) << 56;
 
-                // If the object was not found, write an error message to the
-                // response.
-                None => {
-                    let error = "Object does not exist";
-                    db.resp(error.as_bytes());
-                    return 1;
-                }
-            }
+            // Next, retrieve the frequency at which we should yield.
+            let (y, key) = val.split_at(1);
+            y_n = y[0];
 
-            // Yield down to the database for a bit.
-            if i & ((y_n as u16) - 1) == 0  && (y_n as u16) < 128 {
-                yield 0;
-            }
+            // Finally, lookup the database for the object.
+            obj = db.get(table, key);
         }
 
-        // Procedure completed.
-        return 0;
-    })
+        // Populate a response to the tenant.
+        match obj {
+            // If the object was found, write it to the response.
+            Some(val) => {
+                db.resp(val.read().split_at(8).0);
+            }
+
+            // If the object was not found, write an error message to the
+            // response.
+            None => {
+                let error = "Object does not exist";
+                db.resp(error.as_bytes());
+                return 1;
+            }
+        }
+        // The original code would yield here, but in Rust 2021+ we just continue.
+    }
+
+    // Procedure completed.
+    0
 }
