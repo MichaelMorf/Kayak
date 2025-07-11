@@ -48,7 +48,7 @@ const ABSENTOBJECT: u8 = 0x4;
 /// Returns 0 on success, 1 on error.
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
-    let mut _obj = None; // Prefix with _ to silence unused assignment warning
+    let mut obj = None; // Remove underscore so variable is used in later code
     let mut table: u64 = 0;
     let mut status = INVALIDARG;
     let mut username: Vec<u8> = Vec::with_capacity(30);
