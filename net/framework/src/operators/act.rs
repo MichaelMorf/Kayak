@@ -8,7 +8,7 @@ pub trait Act {
     /// Notification indicating we are done processing the current batch of packets
     fn done(&mut self);
 
-    fn send_q(&mut self, port: &PacketTx) -> Result<u32>;
+    fn send_q(&mut self, port: &dyn crate::interface::PacketTx) -> Result<u32>;
 
     fn capacity(&self) -> i32;
 

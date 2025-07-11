@@ -2,7 +2,7 @@ use super::{Available, HUP, IOScheduler, PollHandle, PollScheduler, READ, Token,
 use fnv::FnvHasher;
 /// TCP connection.
 use net2::TcpBuilder;
-use scheduler::Executable;
+use crate::scheduler::Executable;
 
 use std::collections::HashMap;
 use std::hash::BuildHasherDefault;

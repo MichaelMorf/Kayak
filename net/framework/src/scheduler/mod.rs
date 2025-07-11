@@ -3,7 +3,7 @@
 /// something else (e.g., the `GroupBy` operator). Eventually this trait will have more stuff.
 pub use self::context::*;
 pub use self::standalone_scheduler::*;
-use common::*;
+use crate::common::*;
 
 mod standalone_scheduler;
 pub mod embedded_scheduler;

@@ -57,7 +57,7 @@ impl<T: Batch> Act for MergeBatch<T> {
     }
 
     #[inline]
-    fn send_q(&mut self, port: &PacketTx) -> Result<u32> {
+    fn send_q(&mut self, port: &dyn crate::interface::PacketTx) -> Result<u32> {
         self.parents[self.which].send_q(port)
     }
 
