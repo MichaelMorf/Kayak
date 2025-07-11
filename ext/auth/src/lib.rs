@@ -16,8 +16,6 @@
 #![crate_type = "dylib"]
 // Disable this because rustc complains about no_mangle being unsafe
 //#![forbid(unsafe_code)]
-#![feature(generators, generator_trait)]
-#![allow(bare_trait_objects)]
 
 extern crate crypto;
 #[macro_use]
@@ -29,9 +27,7 @@ use openssl::symm::Mode;
 
 use crypto::bcrypt::bcrypt;
 
-use std::ops::Generator;
 use std::rc::Rc;
-use std::pin::Pin;
 
 use sandstorm::db::DB;
 use sandstorm::pack::pack;
@@ -51,95 +47,82 @@ const ABSENTOBJECT: u8 = 0x4;
 ///
 /// # Return
 ///
-/// A coroutine that can be run inside the database.
+/// Returns 0 on success, 1 on error.
 #[no_mangle]
-#[allow(unreachable_code)]
-#[allow(unused_assignments)]
-pub fn init(db: Rc<DB>) -> Pin<Box<Generator<Yield = u64, Return = u64>>> {
-    Box::pin(move || {
-        let mut obj = None;
-        let mut table: u64 = 0;
-        let mut status = INVALIDARG;
-        let mut username: Vec<u8> = Vec::with_capacity(30);
-        let mut password: Vec<u8> = Vec::with_capacity(72);
-        let key = b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-        let mut iv = *b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\
+pub fn init(db: Rc<dyn DB>) -> u64 {
+    let mut obj = None;
+    let mut table: u64 = 0;
+    let mut status = INVALIDARG;
+    let mut username: Vec<u8> = Vec::with_capacity(30);
+    let mut password: Vec<u8> = Vec::with_capacity(72);
+    let key = b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
+    let mut iv = *b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\
                 \x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F";
-        let ekey = AesKey::new_decrypt(key).unwrap();
-        let mut output = [0u8; 16];
-
-        {
-            // First off, retrieve the arguments to the extension.
-            let args = db.args();
-
-            // Check that the arguments received is long enough to contain an
-            // 8 byte table id, a 30 byte key to be looked up and a 72 byte
-            // password to match. If not, then write an error message to the
-            // response and return to the database.
-            if args.len() != 110 {
-                db.resp(pack(&status));
-                return 1;
-            }
-
-            // Next, split the arguments into a view over the table identifier
-            // (first eight bytes), and a view over the key to be looked up.
-            // De-serialize the table identifier into a u64.
-            let (s_table, remain_args) = args.split_at(8);
-            let (userid, pass) = remain_args.split_at(30);
-            username.extend_from_slice(userid);
-            password.extend_from_slice(pass);
-            aes_ige(&password[0..16], &mut output, &ekey, &mut iv, Mode::Decrypt);
-            password[0..16].copy_from_slice(&output[0..16]);
-
-            // Get the table id from the unwrapped arguments.
-            for (idx, e) in s_table.iter().enumerate() {
-                table |= (*e as u64) << (idx << 3);
-            }
+    let ekey = AesKey::new_decrypt(key).unwrap();
+    let mut output = [0u8; 16];
+    {
+        // First off, retrieve the arguments to the extension.
+        let args = db.args();
+        // Check that the arguments received is long enough to contain an
+        // 8 byte table id, a 30 byte key to be looked up and a 72 byte
+        // password to match. If not, then write an error message to the
+        // response and return to the database.
+        if args.len() != 110 {
+            db.resp(pack(&status));
+            return 1;
         }
-
-        // Finally, lookup the database for the object.
-        GET!(db, table, username, obj);
-        yield 0;
-
-        // Populate a response to the tenant.
-        match obj {
-            // If the object was found, find it's hash and write it to the response.
-            Some(val) => {
-                // The value is 40 bytes long; 24 bytes for hash and 16 bytes for the salt.
-                let bytes = val.read();
-                if bytes.len() != 40 {
-                    db.resp(pack(&status));
-                    return 0;
-                }
-                let hash = &bytes[0..24];
-                let salt = &bytes[24..40];
-
-                // Compute the hash using salt and password, store in output.
-                let output: &mut [u8] = &mut [0; 24];
-                bcrypt(1, salt, &password, output);
-
-                // Compare the calculated hash and DB stored hash.
-                if output == hash {
-                    status = SUCCESSFUL;
-                    db.resp(pack(&status));
-                } else {
-                    status = UNSUCCESSFUL;
-                    db.resp(pack(&status));
-                }
-                return 0;
-            }
-
-            // If the object was not found, write an error message to the
-            // response.
-            None => {
-                status = ABSENTOBJECT;
+        // Next, split the arguments into a view over the table identifier
+        // (first eight bytes), and a view over the key to be looked up.
+        // De-serialize the table identifier into a u64.
+        let (s_table, remain_args) = args.split_at(8);
+        let (userid, pass) = remain_args.split_at(30);
+        username.extend_from_slice(userid);
+        password.extend_from_slice(pass);
+        aes_ige(&password[0..16], &mut output, &ekey, &mut iv, Mode::Decrypt);
+        password[0..16].copy_from_slice(&output[0..16]);
+        // Get the table id from the unwrapped arguments.
+        for (idx, e) in s_table.iter().enumerate() {
+            table |= (*e as u64) << (idx << 3);
+        }
+    }
+    // Replace GET! macro with direct logic
+    let (server, _, val) = db.search_get_in_cache(table, &username);
+    if !server {
+        obj = val;
+    } else {
+        obj = db.get(table, &username);
+    }
+    // Populate a response to the tenant.
+    match obj {
+        // If the object was found, find it's hash and write it to the response.
+        Some(val) => {
+            // The value is 40 bytes long; 24 bytes for hash and 16 bytes for the salt.
+            let bytes = val.read();
+            if bytes.len() != 40 {
                 db.resp(pack(&status));
                 return 0;
             }
+            let hash = &bytes[0..24];
+            let salt = &bytes[24..40];
+            // Compute the hash using salt and password, store in output.
+            let output: &mut [u8] = &mut [0; 24];
+            bcrypt(1, salt, &password, output);
+            // Compare the calculated hash and DB stored hash.
+            if output == hash {
+                status = SUCCESSFUL;
+                db.resp(pack(&status));
+            } else {
+                status = UNSUCCESSFUL;
+                db.resp(pack(&status));
+            }
+            return 0;
         }
-
-        // XXX: This yield is required to get the compiler to compile this closure into a
-        // generator. It is unreachable and benign.
-        yield 0;
-    })
+        // If the object was not found, write an error message to the
+        // response.
+        None => {
+            status = ABSENTOBJECT;
+            db.resp(pack(&status));
+            return 0;
+        }
+    }
 }
