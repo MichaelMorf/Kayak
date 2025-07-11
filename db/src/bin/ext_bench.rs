@@ -13,14 +13,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#![feature(generator_trait)]
-#![allow(bare_trait_objects)]
-
 extern crate db;
 extern crate sandstorm;
 extern crate time;
 
-use std::ops::GeneratorState;
 use std::rc::Rc;
 
 use db::cycles::*;
@@ -33,7 +29,7 @@ use sandstorm::null::NullDB;
 
 fn main() {
     // Create an extension manager and null db interface.
-    let db = Rc::new(NullDB::new());
+    let db: Rc<dyn DB> = Rc::new(NullDB::new());
     let ext_manager = ExtensionManager::new();
 
     // Number of tiny TAO extensions that will be loaded and called into.
@@ -63,9 +59,9 @@ fn main() {
     let proc_names: Vec<String> = (0..n).map(|i| format!("test{}", i)).collect();
     for p in proc_names.iter() {
         let mut ext = ext_manager
-            .get(0, p.to_string())
+            .get(0, p.as_str())
             .unwrap()
-            .get(Rc::clone(&db) as Rc<DB>);
+            .get(Rc::clone(&db));
         ext.as_mut().resume(());
     }
 
@@ -83,9 +79,9 @@ fn main() {
         for p in proc_names.iter() {
             let l = rdtsc();
             let mut ext = ext_manager
-                .get(0, p.to_string())
+                .get(0, p.as_str())
                 .unwrap()
-                .get(Rc::clone(&db) as Rc<DB>);
+                .get(Rc::clone(&db));
             let r = rdtsc();
             load.push(r - l);
 
@@ -102,11 +98,11 @@ fn main() {
     }
 
     let mut ext = ext_manager
-        .get(0, String::from("test"))
+        .get(0, "test")
         .unwrap()
-        .get(Rc::clone(&db) as Rc<DB>);
+        .get(Rc::clone(&db));
 
-    while ext.as_mut().resume(()) != GeneratorState::Complete(0) {}
+    while ext.as_mut().resume(()).is_some() {}
 
     load.sort();
     enter.sort();
