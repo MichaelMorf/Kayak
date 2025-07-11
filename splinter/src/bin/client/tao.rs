@@ -20,7 +20,7 @@ extern crate zipf;
 
 mod setup;
 
-use std::mem::{size_of, transmute};
+use std::mem::size_of;
 use std::sync::Arc;
 
 use db::config;
@@ -306,7 +306,7 @@ impl TaoSendRecv {
             left -= 1;
         }
 
-        let left: [u8; 8] = unsafe { transmute(left) };
+        let left: [u8; 8] = left.to_le_bytes();
 
         let mut n = 0;
         for id in list.chunks(16) {

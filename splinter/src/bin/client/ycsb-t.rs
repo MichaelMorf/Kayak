@@ -27,7 +27,6 @@ mod setup;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
 use std::pin::Pin;
 use std::slice;
 use std::sync::Arc;
@@ -277,9 +276,9 @@ where
             + mem::size_of::<u8>();
         let mut invoke_get: Vec<u8> = Vec::with_capacity(payload_len);
         invoke_get.extend_from_slice("ycsbt".as_bytes());
-        invoke_get.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(table_id.to_le()) });
+        invoke_get.extend_from_slice(&table_id.to_le_bytes());
         invoke_get.extend_from_slice(&[0; 30]); // Placeholder for key
-        invoke_get.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(order.to_le()) });
+        invoke_get.extend_from_slice(&order.to_le_bytes());
         invoke_get.extend_from_slice(&[1]);
         invoke_get.resize(payload_len, 0);
 
@@ -294,9 +293,9 @@ where
         let mut invoke_get_modify: Vec<u8> = Vec::with_capacity(payload_len);
         invoke_get_modify.extend_from_slice("ycsbt".as_bytes());
         invoke_get_modify
-            .extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(table_id.to_le()) });
+            .extend_from_slice(&table_id.to_le_bytes());
         invoke_get_modify.extend_from_slice(&[0; 60]); // Placeholder for 2 keys
-        invoke_get_modify.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(order.to_le()) });
+        invoke_get_modify.extend_from_slice(&order.to_le_bytes());
         invoke_get_modify.extend_from_slice(&[2]);
         invoke_get_modify.resize(payload_len, 0);
 
@@ -640,7 +639,7 @@ where
 
         let ptr = &OpType::SandstormWrite as *const _ as *const u8;
         let optype = unsafe { slice::from_raw_parts(ptr, mem::size_of::<OpType>()) };
-        let version: [u8; 8] = unsafe { transmute(0u64.to_le()) };
+        let version: [u8; 8] = 0u64.to_le_bytes();
         commit_payload.extend_from_slice(optype);
         commit_payload.extend_from_slice(&version);
         commit_payload.extend_from_slice(key1);

@@ -27,8 +27,6 @@ mod setup;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
-use std::pin::Pin;
 use std::slice;
 use std::sync::Arc;
 
@@ -181,7 +179,7 @@ where
     // have been received.
     latencies: Vec<u64>,
 
-    /// The percentage of operations that are extention. The rest are native.
+    // The percentage of operations that are extention. The rest are native.
     ext_p: f32,
 
     /// Finer latency measurements
@@ -645,7 +643,7 @@ where
                 if packet_recvd_signal {
 
                     if len > 100 && len % 10 == 0 {
-                        let mut tmp = &self.latencies[(len-100)..len];
+                        let tmp = &self.latencies[(len-100)..len];
                         let mut tmpvec = tmp.to_vec();
                         self.kth = *order_stat::kth(&mut tmpvec, 98);
                     }
@@ -887,7 +885,7 @@ where
 
         let ptr = &OpType::SandstormWrite as *const _ as *const u8;
         let optype = unsafe { slice::from_raw_parts(ptr, mem::size_of::<OpType>()) };
-        let version: [u8; 8] = unsafe { transmute(0u64.to_le()) };
+        let version: [u8; 8] = 0u64.to_le_bytes();
         commit_payload.extend_from_slice(optype);
         commit_payload.extend_from_slice(&version);
         commit_payload.extend_from_slice(key1);
@@ -912,35 +910,15 @@ where
         );
     }
 
-    #[allow(unreachable_code)]
     /// This method executes the task.
     ///
     /// # Arguments
     /// *`order`: The amount of compute in each extension.
     pub fn execute_task(&mut self, order: u32) {
-        let mut generator = move || {
-            // Compute part for this extension
-            let start = cycles::rdtsc();
-            while cycles::rdtsc() - start < order as u64 {}
-            return 0;
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
-        };
-
-        match Pin::new(&mut generator).resume(()) {
-            GeneratorState::Yielded(val) => {
-                if val != 0 {
-                    panic!("Pushback native execution is buggy");
-                }
-            }
-            GeneratorState::Complete(val) => {
-                if val != 0 {
-                    panic!("Pushback native execution is buggy");
-                }
-            }
-        }
+        // Compute part for this extension
+        let start = cycles::rdtsc();
+        while cycles::rdtsc() - start < order as u64 {}
+        // No generator/coroutine logic needed; just direct execution.
     }
 }
 

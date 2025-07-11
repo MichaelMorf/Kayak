@@ -32,7 +32,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
 use std::sync::Arc;
 
 use crypto::bcrypt::bcrypt;
@@ -261,7 +260,7 @@ where
             "auth".as_bytes().len() + mem::size_of::<u64>() + config.key_len + config.value_len;
         let mut payload_auth = Vec::with_capacity(payload_len);
         payload_auth.extend_from_slice("auth".as_bytes());
-        payload_auth.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_auth.extend_from_slice(&1u64.to_le_bytes());
         payload_auth.resize(payload_len, 0);
 
         // Ignore this as put_pct = 0.

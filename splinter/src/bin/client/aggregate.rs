@@ -21,7 +21,7 @@ extern crate zipf;
 mod setup;
 
 use std::cell::RefCell;
-use std::mem::{size_of, transmute};
+use std::mem::size_of;
 use std::sync::Arc;
 
 use db::config;

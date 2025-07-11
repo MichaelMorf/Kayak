@@ -24,7 +24,6 @@ mod setup;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
 use std::sync::Arc;
 
 use db::config;
@@ -201,7 +200,7 @@ impl YcsbSend {
         let payload_len = "get".as_bytes().len() + mem::size_of::<u64>() + config.key_len;
         let mut payload_get = Vec::with_capacity(payload_len);
         payload_get.extend_from_slice("get".as_bytes());
-        payload_get.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
+        payload_get.extend_from_slice(&1u64.to_le_bytes());
         payload_get.resize(payload_len, 0);
 
         // The payload on an invoke() based put request consists of the extensions name ("put"),
@@ -214,10 +213,8 @@ impl YcsbSend {
             + config.value_len;
         let mut payload_put = Vec::with_capacity(payload_len);
         payload_put.extend_from_slice("put".as_bytes());
-        payload_put.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        payload_put.extend_from_slice(&unsafe {
-            transmute::<u16, [u8; 2]>((config.key_len as u16).to_le())
-        });
+        payload_put.extend_from_slice(&1u64.to_le_bytes());
+        payload_put.extend_from_slice(&((config.key_len as u16).to_le_bytes()));
         payload_put.resize(payload_len, 0);
 
         YcsbSend {
