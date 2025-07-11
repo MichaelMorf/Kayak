@@ -16,15 +16,11 @@
 #![crate_type = "dylib"]
 // Disable this because rustc complains about no_mangle being unsafe
 //#![forbid(unsafe_code)]
-#![feature(generators, generator_trait)]
 #![allow(bare_trait_objects)]
 
 extern crate sandstorm;
 
 use std::rc::Rc;
-use std::ops::Generator;
-use std::pin::Pin;
-
 use sandstorm::db::DB;
 
 /// This function implements an uncooperative extension using the sandstorm interface.
@@ -36,18 +32,11 @@ use sandstorm::db::DB;
 ///
 /// # Return
 ///
-/// A coroutine that can be run inside the database.
+/// A stub function for compatibility with Rust 2021+ (no coroutine).
 #[no_mangle]
 #[allow(unreachable_code)]
 #[allow(unused_assignments)]
-pub fn init(_db: Rc<DB>) -> Pin<Box<Generator<Yield=u64, Return=u64>>> {
-    Box::pin(move || {
-        loop {}
-        // let array: [i64; 5000000000000] = [0;5000000000000];
-        // println!("{}", array[50000000]);
-
-        // These two statements are needed to make the compiler happy.
-        yield 0;
-        return 0;
-    })
+pub fn init(_db: Rc<dyn DB>) -> u64 {
+    // This extension does nothing and immediately returns 0.
+    0
 }
