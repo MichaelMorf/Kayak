@@ -98,12 +98,30 @@ impl<T: AddAssign<T> + Default + Clone> CpMergeableStoreControlPlane<T> {
     }
 }
 
+pub trait ICpMergeableStoreControlPlane<T: AddAssign<T> + Default + Clone> {
+    fn recv(&mut self);
+    fn get(&self, flow: &Flow) -> T;
+    fn iter(&self) -> Iter<Flow, T>;
+    fn len(&self) -> usize;
+    fn is_empty(&self) -> bool;
+    fn remove(&mut self, flow: &Flow) -> T;
+}
+
+impl<T: AddAssign<T> + Default + Clone> ICpMergeableStoreControlPlane<T> for CpMergeableStoreControlPlane<T> {
+    fn recv(&mut self) { self.recv(); }
+    fn get(&self, flow: &Flow) -> T { self.get(flow) }
+    fn iter(&self) -> Iter<Flow, T> { self.iter() }
+    fn len(&self) -> usize { self.len() }
+    fn is_empty(&self) -> bool { self.is_empty() }
+    fn remove(&mut self, flow: &Flow) -> T { self.remove(flow) }
+}
+
 /// Create a `CpMergeableStore`. `delay` specifies the number of buckets buffered together, while `channel_size`
 /// specifies the number of outstanding messages.
 pub fn new_cp_mergeable_store<T: AddAssign<T> + Default + Clone>(
     delay: usize,
     channel_size: usize,
-) -> (CpMergeableStoreDataPath<T>, Box<dyn CpMergeableStoreControlPlane<T>>) {
+) -> (CpMergeableStoreDataPath<T>, Box<dyn ICpMergeableStoreControlPlane<T>>) {
     let (sender, receiver) = sync_channel(channel_size);
     (
         CpMergeableStoreDataPath {
