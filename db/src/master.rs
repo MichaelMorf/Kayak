@@ -814,10 +814,10 @@ impl Master {
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take().and_then(| tenant_arc | {
+                tenant.take().and_then(|tenant_opt| tenant_opt.and_then(| tenant_arc | {
                                 status = RpcStatus::StatusTableDoesNotExist;
                                 tenant_arc.get_table(table_id)
-                            })
+                            }))
                 // If the table exists, lookup the provided key, and update
                 // the status of the rpc.
                 .and_then(| table | {
@@ -1090,11 +1090,11 @@ impl Master {
         let gen = Box::pin(move || {
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
 
-            // If the tenant exists, check if it has a table with the given id,
-            // and update the status of the rpc.
-            let outcome = tenant.take().and_then(|tenant_arc| {
-                status = RpcStatus::StatusTableDoesNotExist;
-                tenant_arc.get_table(table_id)
+            let outcome = tenant.take().and_then(|tenant_opt| {
+                tenant_opt.and_then(|tenant_arc| {
+                    status = RpcStatus::StatusTableDoesNotExist;
+                    tenant_arc.get_table(table_id)
+                })
             });
 
             // If the table exists, update the status of the rpc, and allocate an
@@ -1309,15 +1309,15 @@ impl Master {
         let gen = Box::pin(move || {
             let mut n_recs: u32 = 0;
             let mut status: RpcStatus = RpcStatus::StatusTenantDoesNotExist;
-            let optype: u8 = 0x1;
+            let optype: u8 = 0x3; // OpType::SandstormMultiGet
 
             let outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                tenant.take().and_then(| tenant_arc | {
+                tenant.take().and_then(|tenant_opt| tenant_opt.and_then(| tenant_arc | {
                                 status = RpcStatus::StatusTableDoesNotExist;
                                 tenant_arc.get_table(table_id)
-                            });
+                            }));
 
             // If the table exists, then lookup the keys in the database.
             if let Some(table) = outcome {
@@ -1691,66 +1691,28 @@ impl Master {
             let _outcome =
                 // Check if the tenant exists. If it does, then check if the
                 // table exists, and update the status of the rpc.
-                if let Some(tenant) = tenant.take() {
-                    if let Some(table) = tenant.lock_table().get(&table_id) {
-                        // If the payload size is less than the name length, return an error.
-                        if req.get_payload().len() < record_len {
-                            status = RpcStatus::StatusMalformedRequest;
-                            None
+                if let Some(tenant_opt) = tenant.take() {
+                    if let Some(tenant_arc) = tenant_opt {
+                        if let Some(table) = tenant_arc.lock_table().get(&table_id) {
+                            // If the payload size is less than the name length, return an error.
+                            if req.get_payload().len() < record_len {
+                                status = RpcStatus::StatusMalformedRequest;
+                                None
+                            } else {
+                                let record = &req.get_payload()[..record_len];
+                                status = RpcStatus::StatusOk;
+                                table.get_all_with_record(record)
+                            }
                         } else {
-                            // TODO: Improve the code to avoid so much of deserialization.
-                            let alloc: &Allocator = accessor(alloc);
-                            let mut tx = TX::new(alloc);
-                            let records = req.get_payload();
-                            for record in records.chunks(record_len) {
-                                let (optype, rem) = record.split_at(1);
-                                let (mut version, rem) = rem.split_at(8);
-                                let (key, value) = rem.split_at(key_len);
-                                let version: Version = unsafe { transmute(version.read_u64::<LittleEndian>().unwrap()) };
-                                match parse_record_optype(optype) {
-                                    OpType::SandstormRead => {
-                                        tx.record_get(Record::new(OpType::SandstormRead, version, Bytes::from(key), Bytes::from(value)));
-                                    },
-
-                                    OpType::SandstormWrite => {
-                                        tx.record_put(Record::new(OpType::SandstormWrite, version, Bytes::from(key), Bytes::from(value)));
-                                    }
-
-                                    _ => {
-                                        info!("Commit: The type of a record can only be read or write");
-                                    }
-                                }
-                            }
-
-                            match table.validate(tenant_id, table_id, &mut tx) {
-                                Ok(()) => {
-                                    status = RpcStatus::StatusOk;
-                                    Some(())
-                                }
-
-                                Err(()) => {
-                                    for record in records.chunks(record_len) {
-                                        let (optype, rem) = record.split_at(1);
-                                        let (_, rem) = rem.split_at(8);
-                                        let (key, _) = rem.split_at(key_len);
-                                        match parse_record_optype(optype) {
-                                            OpType::SandstormRead => {
-                                                let _ = res.add_to_payload_tail(key.len(), key);
-                                            },
-
-                                            _ => {}
-                                        }
-                                    }
-                                    status = RpcStatus::StatusTxAbort;
-                                    None
-                                }
-                            }
+                            status = RpcStatus::StatusTableDoesNotExist;
+                            None
                         }
                     } else {
-                        status = RpcStatus::StatusTableDoesNotExist;
+                        status = RpcStatus::StatusTenantDoesNotExist;
                         None
                     }
-                } else{
+                } else {
+                    status = RpcStatus::StatusTenantDoesNotExist;
                     None
                 };
 
