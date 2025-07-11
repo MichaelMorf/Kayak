@@ -1,6 +1,7 @@
 [package]
 name = "macswap"
 version = "0.1.0"
+edition = "2021"
 authors = ["Steven H. Wang <wang.steven.h@gmail.com>"]
 
 [dependencies]
