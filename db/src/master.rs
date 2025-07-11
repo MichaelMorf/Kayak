@@ -1588,9 +1588,7 @@ impl Master {
                     alloc,
                     model,
                 ));
-                // Use ext.as_ref().get to call get on Extension
-                let gen = ext.as_ref().get(Rc::clone(&db) as Rc<dyn DB>);
-                // Remove extra argument from Container::new
+                // Remove call to ext.get and the gen variable
                 return Ok(Box::new(Container::new(TaskPriority::REQUEST, db)));
             }
         }
@@ -1624,7 +1622,7 @@ impl Master {
         req: Packet<UdpHeader, EmptyMetadata>,
         res: Packet<UdpHeader, EmptyMetadata>,
     ) -> Result<
-        Box<Task>,
+        Box<dyn Task>,
         (
             Packet<UdpHeader, EmptyMetadata>,
             Packet<UdpHeader, EmptyMetadata>,
