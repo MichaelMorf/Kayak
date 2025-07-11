@@ -15,6 +15,7 @@
 
 use std::cell::Cell;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use super::context::Context;
 use super::cycles;
@@ -26,6 +27,7 @@ use e2d2::headers::UdpHeader;
 use e2d2::interface::Packet;
 
 use sandstorm::common::PACKET_UDP_LEN;
+use sandstorm::ext::Extension;
 
 /// A container for untrusted code that can be scheduled by the database.
 pub struct Container<'a> {
@@ -76,6 +78,7 @@ impl<'a> Container<'a> {
     pub fn new(
         prio: TaskPriority,
         context: Rc<Context<'a>>,
+        ext: Arc<Extension>,
         // gen: Pin<Box<Generator<Yield = u64, Return = u64>>>
     ) -> Container<'a> {
         // The generator is initialized to a dummy. The first call to run() will
@@ -86,6 +89,7 @@ impl<'a> Container<'a> {
             time: 0,
             db_time: 0,
             db: Cell::new(Some(context)),
+            ext: ext,
             // gen: Some(gen),
         }
     }
