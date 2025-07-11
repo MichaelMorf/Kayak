@@ -727,7 +727,7 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0; // Prefix with _ to silence unused variable warning
+        let mut table_id: TableId = 0;
         let mut key_length = 0;
         let mut rpc_stamp = 0;
 
@@ -876,7 +876,7 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0; // Prefix with _ to silence unused variable warning
+        let mut table_id: TableId = 0;
         let mut key_length = 0;
         let mut rpc_stamp = 0;
         let mut req_generator = GetGenerator::InvalidGenerator;
@@ -1015,7 +1015,7 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0; // Prefix with _ to silence unused variable warning
+        let mut table_id: TableId = 0;
         let mut key_length = 0;
         let mut rpc_stamp = 0;
 
@@ -1130,7 +1130,7 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0; // Prefix with _ to silence unused variable warning
+        let mut table_id: TableId = 0;
         let mut key_length = 0;
         let mut rpc_stamp = 0;
 
@@ -1239,7 +1239,7 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0; // Prefix with _ to silence unused variable warning
+        let mut table_id: TableId = 0;
         let mut key_length = 0;
         let mut num_keys = 0;
         let mut rpc_stamp = 0;
@@ -1391,7 +1391,7 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0; // Prefix with _ to silence unused variable warning
+        let mut table_id: TableId = 0;
         let mut key_length = 0;
         let mut num_keys = 0;
         let mut rpc_stamp = 0;
@@ -1907,7 +1907,7 @@ impl Service for Master {
         (
 
             Packet<UdpHeader, EmptyMetadata>,
-                                             Packet<UdpHeader, EmptyMetadata>,
+                       Packet<UdpHeader, EmptyMetadata>,
         ),
         (
             Packet<UdpHeader, EmptyMetadata>,
