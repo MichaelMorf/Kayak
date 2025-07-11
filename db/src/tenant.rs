@@ -101,7 +101,7 @@ impl Tenant {
     /// # Return
     ///
     /// A write lock on the tenant table.
-    pub fn lock_table(&self) -> RwLockWriteGuard<HashMap<TableId, Arc<Table>>> {
+    pub fn lock_table(&self) -> RwLockWriteGuard<'_, HashMap<TableId, Arc<Table>>> {
         // Acquire a write lock.
         self.tables.write()
     }

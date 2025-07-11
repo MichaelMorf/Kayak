@@ -74,8 +74,8 @@ impl<'a> Container<'a> {
     pub fn new(
         prio: TaskPriority,
         context: Rc<Context<'a>>,
-        // gen: Pin<Box<Generator<Yield = u64, Return = u64>>>,
-    ) -> Container {
+        // gen: Pin<Box<Generator<Yield = u64, Return = u64>>>
+    ) -> Container<'a> {
         // The generator is initialized to a dummy. The first call to run() will
         // retrieve the actual generator from the extension.
         Container {

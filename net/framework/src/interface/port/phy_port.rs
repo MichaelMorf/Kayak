@@ -20,7 +20,9 @@ pub struct PmdPort {
     port: i32,
     rxqs: i32,
     txqs: i32,
+    #[allow(dead_code)]
     stats_rx: Vec<Arc<CacheAligned<PortStats>>>,
+    #[allow(dead_code)]
     stats_tx: Vec<Arc<CacheAligned<PortStats>>>,
 }
 

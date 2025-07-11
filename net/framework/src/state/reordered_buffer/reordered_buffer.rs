@@ -25,7 +25,7 @@ struct Segment {
     pub seq: u32,
     pub length: u16,
     pub next: isize,
-    pub idx: isize,
+    pub _idx: isize, // Prefix with _ to silence unused field warning
 }
 
 impl Segment {

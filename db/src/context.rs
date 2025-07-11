@@ -273,6 +273,7 @@ impl<'a> Context<'a> {
     pub fn db_credit(&self) -> u64 {
         self.db_credit.borrow().clone()
     }
+    #[allow(dead_code)]
 }
 
 // The DB trait for Context.
@@ -435,8 +436,8 @@ impl<'a> DB for Context<'a> {
                 let mut key = vec![0; 30];
                 let num: u32 = 120000;
                 for i in 1..(num + 1) {
-                    let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
-                    &key[0..4].copy_from_slice(&temp);
+                    let temp: [u8; 4] = u32::to_ne_bytes(i.to_le()); // Replace transmute with to_ne_bytes
+                    let _ = &key[0..4].copy_from_slice(&temp); // Assign to _ to silence unused borrow warning
                     sum += self.heap.resolve(table.get(&key).unwrap().value).unwrap().1[0] as u64;
                 }
                 // This is used for YCSB+T validation.

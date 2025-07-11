@@ -1,6 +1,6 @@
 #![recursion_limit = "1024"]
 #![feature(log_syntax)]
-#![feature(specialization)]
+#![feature(min_specialization)] // Use min_specialization instead of specialization
 #![feature(slice_concat_ext)]
 //#![feature(fnbox)]
 //#![feature(alloc)]

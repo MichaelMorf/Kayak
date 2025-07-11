@@ -214,13 +214,7 @@ impl Table {
         // Create an array of N_BUCKETS lock guards; the unsafe code here is to get
         // around the fact that there isn't a way to initialize with Unlocked for each
         // element since Lock is non-Copy.
-        let mut locks: [Lock; N_BUCKETS] = unsafe {
-            let mut a: [Lock; N_BUCKETS] = MaybeUninit::uninit().assume_init();
-            for i in &mut a[..] {
-                ::std::ptr::write(i, Lock::Unlocked);
-            }
-            a
-        };
+        let mut locks: [Lock; N_BUCKETS] = std::array::from_fn(|_| Lock::default()); // Use from_fn for safe initialization
 
         // Acquire write locks.
         tx.writes().iter().for_each(|record| {
