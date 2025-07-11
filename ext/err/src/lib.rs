@@ -19,6 +19,7 @@ extern crate sandstorm;
 
 use std::rc::Rc;
 use sandstorm::db::DB;
+use sandstorm::buf::ReadBuf;
 
 /// This function is purposely not named "init". It is a simple extension
 /// required for testing.
