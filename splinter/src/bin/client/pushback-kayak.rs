@@ -242,6 +242,22 @@ where
 
     // The length of the record.
     record_len: usize,
+
+    // Add missing fields for compatibility with constructor and usage
+    max_out: f32,
+    payload_pushback: RefCell<Vec<u8>>,
+    payload_put: RefCell<Vec<u8>>,
+    finished: bool,
+    outstanding: u64,
+    manager: RefCell<TaskManager>,
+    native_state: RefCell<HashMap<u64, NativeState>>,
+    xloop_last_rdtsc: u64,
+    xloop_last_rate: f32,
+    xloop_last_x: f32,
+    xloop_last_recvd: u64,
+    rloop_last_recvd: u64,
+    rloop_last_rdtsc: u64,
+    ext_p: f32,
 }
 
 // Implementation of methods on PushbackRecv.
@@ -608,7 +624,7 @@ where
                 if self.rloop_factor != 0 && packet_recvd_signal && (rloop_rdtsc - self.rloop_last_rdtsc > 2400000000 / self.rloop_factor as u64) &&
                     len > 100 && len % self.rloop_factor == 0 {
 
-                    let rloop_rate = 2.4e6 * (self.recvd - self.rloop_last_recvd) as f32 / (rloop_rdtsc - self.rloop_last_rdtsc) as f32;
+                    let rloop_rate = 2.4e6 * (self.recvd - self.rloop_last_recvd) as f32 / (rloop_rdtsc - rloop_rdtsc) as f32;
                     self.rloop_last_rdtsc = rloop_rdtsc;
                     self.rloop_last_recvd = self.recvd;
 
@@ -648,7 +664,7 @@ where
                 if self.xloop_factor != 0 && packet_recvd_signal && (xloop_rdtsc - self.xloop_last_rdtsc > 2400000000 / self.xloop_factor as u64) &&
                     len > 100 && len % self.xloop_factor == 0 {
                     // first calc the rate
-                    let xloop_rate = 2.4e6 * (self.recvd - self.xloop_last_recvd) as f32 / (xloop_rdtsc - self.xloop_last_rdtsc) as f32;
+                    let xloop_rate = 2.4e6 * (self.recvd - self.xloop_last_recvd) as f32 / (xloop_rdtsc - xloop_rdtsc) as f32;
                     self.xloop_last_rdtsc = xloop_rdtsc;
                     self.xloop_last_recvd = self.recvd;
 
