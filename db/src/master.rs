@@ -1578,7 +1578,7 @@ impl Master {
             }
 
             // Create a Container for an extension and return.
-            if let Some(_ext) = self.extensions.get(tenant_id, &name) {
+            if let Some(ext) = self.extensions.get(tenant_id, &name) {
                 let db = Rc::new(Context::new(
                     req,
                     name_length,
