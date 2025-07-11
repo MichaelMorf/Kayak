@@ -1,7 +1,3 @@
-#![feature(generators)]
-#![feature(generator_trait)]
-// Disable this because rustc complains about no_mangle being unsafe
-//#![forbid(unsafe_code)]
 #![allow(bare_trait_objects)]
 
 extern crate sandstorm;
@@ -17,9 +13,6 @@ use sandstorm::result::Result;
 use sandstorm::size_of;
 use sandstorm::time::{SystemTime, UNIX_EPOCH};
 use sandstorm::vec::*;
-
-use std::ops::Generator;
-use std::pin::Pin;
 
 type Id = u64;
 type ObjectType = u16;
@@ -51,26 +44,22 @@ impl From<u8> for TaoOp {
     }
 }
 
-type ResponseHandler = fn(db: Rc<DB>, otype: &[u8], object: &[u8]);
-type AssocResponseHandler = fn(db: Rc<DB>, assoc: Association);
+type ResponseHandler = fn(db: Rc<dyn DB>, otype: &[u8], object: &[u8]);
+type AssocResponseHandler = fn(db: Rc<dyn DB>, assoc: Association);
 
 #[no_mangle]
 #[allow(unreachable_code)]
 #[allow(unused_assignments)]
-pub fn init(db: Rc<DB>) -> Pin<Box<Generator<Yield = u64, Return = u64>>> {
-    Box::pin(move || {
-        {
-            return dispatch(db);
-        }
-        yield 0;
-    })
+pub fn init(db: Rc<dyn DB>) -> u64 {
+    // This extension now just dispatches and returns 0.
+    dispatch(db)
 }
 
 /// Manages the arguments and calls to execute TAO code by the client.
 ///
 /// # Arguments
 /// * `db` - a connection to the database.
-fn dispatch(db: Rc<DB>) -> u64 {
+fn dispatch(db: Rc<dyn DB>) -> u64 {
     // Each packet should contain a 1 byte opcode denoting which method to call.
     if db.args().len() < 1 {
         let error = "Invalid args";
@@ -98,7 +87,7 @@ fn dispatch(db: Rc<DB>) -> u64 {
 /// * `db` - a connection to the database.
 /// * `otype` - the type of the object.
 /// * `object` - the bytes representing the objects value.
-fn object_response_handler(db: Rc<DB>, _otype: &[u8], object: &[u8]) {
+fn object_response_handler(db: Rc<dyn DB>, _otype: &[u8], object: &[u8]) {
     // db.resp(otype);
     db.resp(object);
 }
@@ -108,7 +97,7 @@ fn object_response_handler(db: Rc<DB>, _otype: &[u8], object: &[u8]) {
 /// # Arguments
 /// * `db` - a connection to the database.
 /// * `assoc` - the association which needs to be written into the response to the client.
-fn assoc_response_handler(db: Rc<DB>, assoc: Association) {
+fn assoc_response_handler(db: Rc<dyn DB>, assoc: Association) {
     let mut assoc_serialized: Vec<u8> = Vec::with_capacity(Association::size());
     assoc_serialized
         .write_u64::<LittleEndian>(assoc.id)
@@ -129,7 +118,7 @@ fn assoc_response_handler(db: Rc<DB>, assoc: Association) {
 /// # Arguments
 /// * `db` - a connection to the database.
 /// * `ops` - packet information
-fn obj_get_dispatch(db: Rc<DB>, ops: &[u8]) {
+fn obj_get_dispatch(db: Rc<dyn DB>, ops: &[u8]) {
     // |table_id = 8|obj_id = 8|
     if ops.len() != 16 {
         let error = "Invalid packet len.";
@@ -154,7 +143,7 @@ fn obj_get_dispatch(db: Rc<DB>, ops: &[u8]) {
 /// # Arguments
 /// * `db` - a connection to the database.
 /// * `ops` - packet information
-fn obj_add_dispatch(db: Rc<DB>, ops: &[u8]) {
+fn obj_add_dispatch(db: Rc<dyn DB>, ops: &[u8]) {
     // |table_id = 8|obj_type = 2|value = n > 0|
     if ops.len() <= 10 {
         let error = "Invalid packet len.";
@@ -181,7 +170,7 @@ fn obj_add_dispatch(db: Rc<DB>, ops: &[u8]) {
 /// # Arguments
 /// * `db` - a connection to the database.
 /// * `ops` - packet information
-fn obj_update_dispatch(db: Rc<DB>, ops: &[u8]) {
+fn obj_update_dispatch(db: Rc<dyn DB>, ops: &[u8]) {
     // |table_id = 8|obj_id = 8|obj_type = 2|value = n > 0|
     if ops.len() <= 18 {
         let error = "Invalid packet len.";
@@ -212,7 +201,7 @@ fn obj_update_dispatch(db: Rc<DB>, ops: &[u8]) {
 /// # Arguments
 /// * `db` - a connection to the database.
 /// * `ops` - packet information
-fn obj_delete_dispatch(db: Rc<DB>, ops: &[u8]) {
+fn obj_delete_dispatch(db: Rc<dyn DB>, ops: &[u8]) {
     // |table_id = 8|obj_id = 8|
     if ops.len() != 16 {
         let error = "Invalid packet len.";
@@ -242,7 +231,7 @@ fn obj_delete_dispatch(db: Rc<DB>, ops: &[u8]) {
 /// * `opcode` - identifier for which association operation should be called.
 /// * `db` - a connection to the database.
 /// * `ops` - packet information.
-fn assoc_dispatch(opcode: u8, db: Rc<DB>, ops: &[u8]) {
+fn assoc_dispatch(opcode: u8, db: Rc<dyn DB>, ops: &[u8]) {
     // |table_id = 8|id1 = 8|assoc_type = 2|id2 = 8|
     if ops.len() != 26 {
         db.resp("Invalid packet len.".as_bytes());
@@ -280,7 +269,7 @@ fn assoc_dispatch(opcode: u8, db: Rc<DB>, ops: &[u8]) {
 }
 
 pub struct TAO {
-    client: Rc<DB>,
+    client: Rc<dyn DB>,
     object_table_id: u64,
     association_table_id: u64,
     next_id: Id,
@@ -293,7 +282,7 @@ impl TAO {
     /// * `client` - Access to a sandstorm::DB in which to add DB info to.
     /// * `object_table_id` - table id for the object table associated with this TAO instance.
     /// * `association_table_id` - table id for the association table associated with this TAO instance.
-    pub fn new(client: Rc<DB>, object_table_id: u64, association_table_id: u64) -> TAO {
+    pub fn new(client: Rc<dyn DB>, object_table_id: u64, association_table_id: u64) -> TAO {
         // Create a table if they don't already exist.
         // client.create_table(object_table_id);
         // client.create_table(association_table_id);
