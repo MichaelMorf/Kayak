@@ -14,8 +14,6 @@
  */
 // Disable this because rustc complains about no_mangle being unsafe
 //#![forbid(unsafe_code)]
-#![feature(generators)]
-#![feature(generator_trait)]
 #![no_std]
 
 extern crate crypto_hash;
@@ -29,7 +27,6 @@ use sandstorm::db::DB;
 use sandstorm::pack::pack;
 use sandstorm::rc::Rc;
 use sandstorm::size_of;
-use sandstorm::{Generator, Pin};
 
 /// Status codes for the response to the tenant.
 const SUCCESSFUL: u8 = 0x01;
@@ -69,93 +66,83 @@ macro_rules! MULTIGET1 {
 ///
 /// # Return
 ///
-/// A coroutine that can be run inside the database.
+/// Returns 0 on success, 1 on error.
 #[no_mangle]
-#[allow(unreachable_code)]
-#[allow(unused_assignments)]
-pub fn init(db: Rc<dyn DB>) -> Pin<Box<dyn Generator<Yield = u64, Return = u64>>> {
-    Box::pin(move || {
-        // Error code and response defined upfront so that results are written only
-        // at the end of this function.
-        let mut err = INVALIDARG;
-        let mut num: u32 = 0;
-        let mut aggr: u64 = 0;
-        let mut optype: u8 = 0;
-        let mut obj: Option<ReadBuf> = None;
-        let mut buf: Option<MultiReadBuf> = None;
-        {
-            let arg: &[u8] = db.args();
-            let (t, rem) = arg.split_at(size_of::<u64>());
-            let (n, rem) = rem.split_at(size_of::<u32>());
-            let (key, op) = rem.split_at(size_of::<u64>());
-            optype = op[0];
+pub fn init(db: Rc<dyn DB>) -> u64 {
+    // Error code and response defined upfront so that results are written only
+    // at the end of this function.
+    let mut err = INVALIDARG;
+    let mut num: u32 = 0;
+    let mut aggr: u64 = 0;
+    let mut optype: u8 = 0;
+    let mut obj: Option<ReadBuf> = None;
+    let mut buf: Option<MultiReadBuf> = None;
+    {
+        let arg: &[u8] = db.args();
+        let (t, rem) = arg.split_at(size_of::<u64>());
+        let (n, rem) = rem.split_at(size_of::<u32>());
+        let (key, op) = rem.split_at(size_of::<u64>());
+        optype = op[0];
 
-            // Get the table id from the unwrapped arguments.
-            let mut table: u64 = 0;
-            for (idx, e) in t.iter().enumerate() {
-                table |= (*e as u64) << (idx << 3);
-            }
-
-            // Get the number of keys to aggregate across.
-            for (idx, e) in n.iter().enumerate() {
-                num |= (*e as u32) << (idx << 3);
-            }
-
-            // Retrieve the list of keys to aggregate across.
-            //let obj = db.get(table, key);
-            GET1!(db, table, key, obj);
-
-            // Try performing the aggregate if the key list was successfully retrieved.
-            if let Some(val) = obj {
-                let value = val.read().split_at((KEYLENGTH as usize) * (num as usize)).0;
-
-                MULTIGET1!(db, table, KEYLENGTH, value, buf);
-            }
+        // Get the table id from the unwrapped arguments.
+        let mut table: u64 = 0;
+        for (idx, e) in t.iter().enumerate() {
+            table |= (*e as u64) << (idx << 3);
         }
-        match buf {
-            Some(vals) => {
-                let i = 0;
-                while vals.next() {
-                    if i < num {
-                        if optype == 1 {
-                            let result = digest(Algorithm::MD5, vals.read());
-                            aggr += result[0] as u64;
-                        }
-                        if optype == 2 {
-                            let result = digest(Algorithm::SHA1, vals.read());
-                            aggr += result[0] as u64;
-                        }
-                        if optype == 3 {
-                            let result = digest(Algorithm::SHA256, vals.read());
-                            aggr += result[0] as u64;
-                        }
-                        if optype == 4 {
-                            let result = digest(Algorithm::SHA512, vals.read());
-                            aggr += result[0] as u64;
-                        }
-                    } else {
-                        break;
+
+        // Get the number of keys to aggregate across.
+        for (idx, e) in n.iter().enumerate() {
+            num |= (*e as u32) << (idx << 3);
+        }
+
+        // Retrieve the list of keys to aggregate across.
+        //let obj = db.get(table, key);
+        GET1!(db, table, key, obj);
+
+        // Try performing the aggregate if the key list was successfully retrieved.
+        if let Some(val) = obj {
+            let value = val.read().split_at((KEYLENGTH as usize) * (num as usize)).0;
+
+            MULTIGET1!(db, table, KEYLENGTH, value, buf);
+        }
+    }
+    match buf {
+        Some(vals) => {
+            let mut i = 0;
+            while vals.next() {
+                if i < num {
+                    if optype == 1 {
+                        let result = digest(Algorithm::MD5, vals.read());
+                        aggr += result[0] as u64;
                     }
-                    yield 0;
+                    if optype == 2 {
+                        let result = digest(Algorithm::SHA1, vals.read());
+                        aggr += result[0] as u64;
+                    }
+                    if optype == 3 {
+                        let result = digest(Algorithm::SHA256, vals.read());
+                        aggr += result[0] as u64;
+                    }
+                    if optype == 4 {
+                        let result = digest(Algorithm::SHA512, vals.read());
+                        aggr += result[0] as u64;
+                    }
+                } else {
+                    break;
                 }
-            }
-
-            None => {
-                err = INVALIDKEY;
-                db.resp(pack(&err));
-                return 0;
+                i += 1;
             }
         }
-
-        err = SUCCESSFUL;
-        // First write in the response code.
-        db.resp(pack(&err));
-        // Second write the result.
-        db.resp(pack(&aggr));
-
-        return 0;
-
-        // XXX: Unreachable, but required for compilation.
-        yield 0;
-    })
+        None => {
+            err = INVALIDKEY;
+            db.resp(pack(&err));
+            return 0;
+        }
+    }
+    err = SUCCESSFUL;
+    // First write in the response code.
+    db.resp(pack(&err));
+    // Second write the result.
+    db.resp(pack(&aggr));
+    0
 }
