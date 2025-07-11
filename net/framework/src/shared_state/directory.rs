@@ -1,7 +1,7 @@
 use super::{SharedMemory, open_shared};
 use std::mem::size_of;
 use std::sync::atomic::*;
-use utils::PAGE_SIZE;
+use crate::utils::PAGE_SIZE;
 /// A directory of shared structures.
 
 const MAX_LEN: usize = 256; // 255 byte names

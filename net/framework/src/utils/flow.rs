@@ -1,6 +1,6 @@
 use byteorder::{BigEndian, ByteOrder};
 use fnv::FnvHasher;
-use native::zcsi::*;
+use crate::native::zcsi::*;
 use std::hash::Hasher;
 use std::mem;
 use std::slice;

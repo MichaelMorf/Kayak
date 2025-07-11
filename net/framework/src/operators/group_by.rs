@@ -3,10 +3,10 @@ use super::ReceiveBatch;
 use super::RestoreHeader;
 use super::act::Act;
 use super::iterator::*;
-use headers::EndOffset;
-use interface::Packet;
-use queues::*;
-use scheduler::{Executable, Scheduler};
+use crate::headers::EndOffset;
+use crate::interface::Packet;
+use crate::queues::*;
+use crate::scheduler::{Executable, Scheduler};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 

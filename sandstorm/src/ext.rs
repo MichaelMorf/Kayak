@@ -14,14 +14,9 @@
  */
 
 use hashbrown::HashMap;
-use std::pin::Pin;
-use std::rc::Rc;
 use std::sync::Arc;
 
-use super::common::TenantId;
-use super::db::DB;
-
-use libloading::os::unix::Symbol;
+use crate::common::TenantId;
 use libloading::Library;
 use spin::RwLock;
 
@@ -142,15 +137,15 @@ impl ExtensionManager {
     /// # Return
     ///
     /// A ref-counted handle to the extension if it was found.
-    pub fn get(&self, tenant: TenantId, name: String) -> Option<Arc<Extension>> {
-        // Lookup the extension, if it exists, bump up it's refcount, and
+    pub fn get(&self, tenant: TenantId, name: &str) -> Option<Arc<Extension>> {
+        // Lookup the extension, if it exists, bump up its refcount, and
         // return it. The bucket is determined by the least significant byte
         // of the tenant id.
         let bucket = (tenant & 0xff) as usize & (EXT_BUCKETS - 1);
         self.extensions[bucket]
             .read()
-            .get(&(tenant, name))
-            .and_then(|ext| Some(Arc::clone(&ext)))
+            .get(&(tenant, name.to_string()))
+            .map(Arc::clone)
     }
 
     /// Shares a previously loaded extension with another tenant.
@@ -166,8 +161,8 @@ impl ExtensionManager {
     /// True, if the extension was successfully shared. False, if it was not found.
     pub fn share(&self, owner: TenantId, share: TenantId, name: &str) -> bool {
         // First, try to retrieve a copy (Arc) of the extension from the owner.
-        // If successfull, then share it with the tenant identified by `share`.
-        self.get(owner, String::from(name))
+        // If successful, then share it with the tenant identified by `share`.
+        self.get(owner, name)
             .and_then(|ext| {
                 let bucket = (share & 0xff) as usize & (EXT_BUCKETS - 1);
                 self.extensions[bucket]
@@ -249,7 +244,7 @@ mod tests {
         assert!(man.load("../ext/test/target/release/libtest.so", 0, "test"));
 
         // Retrieve the extension, and the generator.
-        let ext = man.get(0, "test".to_string()).unwrap();
+        let ext = man.get(0, "test").unwrap();
         let mut gen = ext.get(Rc::new(NullDB::new()));
 
         // Assert that the test extension has one yield statement.
@@ -263,6 +258,6 @@ mod tests {
     #[should_panic]
     fn test_man_get_err() {
         let man = ExtensionManager::new();
-        man.get(0, "test".to_string()).unwrap();
+        man.get(0, "test").unwrap();
     }
 }

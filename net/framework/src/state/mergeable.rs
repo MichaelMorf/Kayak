@@ -7,7 +7,7 @@ use std::hash::BuildHasherDefault;
 use std::ops::AddAssign;
 use std::sync::{Arc, RwLock, RwLockReadGuard};
 
-use utils::Flow;
+use crate::utils::Flow;
 
 /// A generic store for associating some merge-able type with each flow. Note, the merge must be commutative, we do not
 /// guarantee ordering for things being merged. The merge function is implemented by implementing the

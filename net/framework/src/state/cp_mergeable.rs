@@ -5,7 +5,7 @@ use std::ops::AddAssign;
 use std::sync::mpsc::{Receiver, SyncSender, sync_channel};
 use twox_hash::XxHash;
 
-use utils::Flow;
+use crate::utils::Flow;
 
 type XxHasher = BuildHasherDefault<XxHash>;
 const VEC_SIZE: usize = 1 << 24;
