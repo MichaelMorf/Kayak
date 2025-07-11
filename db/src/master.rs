@@ -1683,7 +1683,7 @@ impl Master {
                                 let (optype, rem) = record.split_at(1);
                                 let (mut version, rem) = rem.split_at(8);
                                 let (key, value) = rem.split_at(key_len);
-                                let version: Version = unsafe { transmute(version.read_u64::<LittleEndian>().unwrap()) };
+                                let version: Version = Version::from_le_bytes(version.read_u64::<LittleEndian>().unwrap().to_le_bytes());
                                 match parse_record_optype(optype) {
                                     OpType::SandstormRead => {
                                         tx.record_get(Record::new(OpType::SandstormRead, version, Bytes::from(key), Bytes::from(value)));
@@ -1782,7 +1782,7 @@ impl Master {
         // Check if the tenant provided lengths match the actual request length.
         if buf.len() != size_of::<InstallRequest>() + name_l + extn_l {
             res.common_header.status = RpcStatus::StatusMalformedRequest;
-            let res: [u8; size_of::<InstallResponse>()] = unsafe { transmute(res) };
+            let res: [u8; size_of::<InstallResponse>()] = unsafe { std::ptr::read(&res as *const _ as *const [u8; size_of::<InstallResponse>()]) };
             let mut ret: Vec<u8> = Vec::new();
             ret.extend_from_slice(&res);
             return ret;
@@ -1814,7 +1814,7 @@ impl Master {
             }
         }
 
-        let res: [u8; size_of::<InstallResponse>()] = unsafe { transmute(res) };
+        let res: [u8; size_of::<InstallResponse>()] = unsafe { std::ptr::read(&res as *const _ as *const [u8; size_of::<InstallResponse>()]) };
         let mut ret: Vec<u8> = Vec::new();
         ret.extend_from_slice(&res);
         return ret;
@@ -1895,7 +1895,7 @@ impl Service for Master {
         ),
     > {
         // Based on the opcode, call the relevant RPC handler.
-        match op {
+               match op {
             OpCode::SandstormGetRpc => {
                 return self.get_native(req, res);
             }
