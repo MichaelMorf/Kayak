@@ -269,6 +269,7 @@ impl<'a> Context<'a> {
     /// # Return
     ///
     /// The current value of the credit for the extension.
+    #[allow(dead_code)]
     pub fn db_credit(&self) -> u64 {
         self.db_credit.borrow().clone()
     }
