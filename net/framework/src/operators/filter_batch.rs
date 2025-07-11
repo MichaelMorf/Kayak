@@ -2,10 +2,10 @@ use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
-use common::*;
-use headers::EndOffset;
-use interface::Packet;
-use interface::PacketTx;
+use crate::common::*;
+use crate::headers::EndOffset;
+use crate::interface::Packet;
+use crate::interface::PacketTx;
 
 pub type FilterFn<T, M> = Box<dyn FnMut(&Packet<T, M>) -> bool + Send>;
 

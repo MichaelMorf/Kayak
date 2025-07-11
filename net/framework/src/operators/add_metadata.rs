@@ -2,9 +2,9 @@ use super::Batch;
 use super::act::Act;
 use super::iterator::*;
 use super::packet_batch::PacketBatch;
-use common::*;
-use interface::Packet;
-use interface::PacketTx;
+use crate::common::*;
+use crate::interface::Packet;
+use crate::interface::PacketTx;
 use std::marker::PhantomData;
 
 pub type MetadataFn<T, M, M2> = Box<dyn FnMut(&Packet<T, M>) -> M2 + Send>;

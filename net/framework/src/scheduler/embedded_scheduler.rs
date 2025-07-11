@@ -1,5 +1,5 @@
 use super::{Executable, Scheduler};
-use common::*;
+use crate::common::*;
 use std::default::Default;
 
 /// Used to keep stats about each pipeline and eventually grant tokens, etc.

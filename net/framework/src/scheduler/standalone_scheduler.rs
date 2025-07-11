@@ -1,5 +1,5 @@
 use super::{Scheduler, Executable};
-use common::*;
+use crate::common::*;
 use std::default::Default;
 use std::sync::Arc;
 use std::sync::mpsc::{SyncSender, Receiver, sync_channel, RecvError};

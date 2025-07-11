@@ -141,9 +141,6 @@ impl ExtensionManager {
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
             ],
         }
     }
