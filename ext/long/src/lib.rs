@@ -33,8 +33,8 @@ use sandstorm::db::DB;
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
     for i in 0u16..128u16 {
-        let mut y_n = 0;
-        let mut obj = None;
+        let mut _y_n = 0; // Prefix with _ to silence unused variable warning
+        let mut _obj = None; // Prefix with _ to silence unused assignment warning
         {
             // First off, retrieve the arguments to the extension.
             let args = db.args();
@@ -60,14 +60,14 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
 
             // Next, retrieve the frequency at which we should yield.
             let (y, key) = val.split_at(1);
-            y_n = y[0];
+            _y_n = y[0]; // Prefix with _ to silence unused assignment warning
 
             // Finally, lookup the database for the object.
-            obj = db.get(table, key);
+            _obj = db.get(table, key);
         }
 
         // Populate a response to the tenant.
-        match obj {
+        match _obj {
             // If the object was found, write it to the response.
             Some(val) => {
                 db.resp(val.read().split_at(8).0);

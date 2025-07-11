@@ -15,7 +15,6 @@
 
 extern crate sandstorm;
 
-use sandstorm::boxed::Box;
 use sandstorm::buf::{MultiReadBuf, ReadBuf};
 use sandstorm::db::DB;
 use sandstorm::pack::pack;
@@ -66,11 +65,11 @@ macro_rules! MULTIGET1 {
 pub fn init(db: Rc<dyn DB>) -> u64 {
     // Error code and response defined upfront so that results are written only
     // at the end of this function.
-    let mut err = INVALIDARG;
-    let mut order: u32 = 0;
-    let mut aggr: u64 = 0;
-    let mut obj: Option<ReadBuf> = None;
-    let mut buf: Option<MultiReadBuf> = None;
+    let mut _err = INVALIDARG; // Prefix with _ to silence unused assignment warning
+    let mut _order: u32 = 0; // Prefix with _ to silence unused assignment warning
+    let mut _aggr: u64 = 0; // Prefix with _ to silence unused assignment warning
+    let mut _obj = None; // Prefix with _ to silence unused assignment warning
+    let mut _buf: Option<MultiReadBuf> = None; // Prefix with _ to silence unused assignment warning
     {
         let arg: &[u8] = db.args();
         let (t, val) = arg.split_at(size_of::<u64>());
@@ -91,23 +90,23 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
 
         // Get the order.
         for (idx, e) in o.iter().enumerate() {
-            order |= (*e as u32) << (idx << 3);
+            _order |= (*e as u32) << (idx << 3);
         }
 
         // Retrieve the list of keys to aggregate across.
-        GET1!(db, table, key, obj);
+        GET1!(db, table, key, _obj);
 
         // Try performing the aggregate if the key list was successfully retrieved.
-        if let Some(val) = obj {
+        if let Some(val) = _obj {
             let mut col = Vec::new();
             let value = val
                 .read()
                 .split_at((KEYLENGTH as usize) * (num_k as usize))
                 .0;
 
-            MULTIGET1!(db, table, KEYLENGTH, value, buf);
+            MULTIGET1!(db, table, KEYLENGTH, value, _buf);
 
-            match buf {
+            match _buf {
                 Some(vals) => {
                     if vals.num() > 0 {
                         col.push(vals.read()[0]);
@@ -119,26 +118,26 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
                 }
 
                 None => {
-                    err = INVALIDKEY;
-                    db.resp(pack(&err));
+                    _err = INVALIDKEY;
+                    db.resp(pack(&_err));
                     return 0;
                 }
             }
 
             // Aggregate the saved column.
-            aggr = col.iter().fold(0, |a, e| a + (*e as u64));
+            _aggr = col.iter().fold(0, |a, e| a + (*e as u64));
         }
     }
 
     // Compute pow(aggr, order).
-    for _mul in 1..order {
-        aggr *= aggr;
+    for _mul in 1.._order {
+        _aggr *= _aggr;
     }
-    err = SUCCESSFUL;
+    _err = SUCCESSFUL;
     // First write in the response code.
-    db.resp(pack(&err));
+    db.resp(pack(&_err));
     // Second write the result.
-    db.resp(pack(&aggr));
+    db.resp(pack(&_aggr));
 
     0
 }

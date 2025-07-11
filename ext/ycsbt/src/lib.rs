@@ -29,15 +29,15 @@ use sandstorm::Pin;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn rdtsc() -> u64 {
     unsafe {
-        let mut lo: u32;
-        let mut hi: u32;
+        let mut _lo: u32;
+        let mut _hi: u32;
         asm!(
             "rdtsc",
-            out("eax") lo,
-            out("edx") hi,
+            out("eax") _lo,
+            out("edx") _hi,
             options(nomem, nostack, preserves_flags)
         );
-        ((hi as u64) << 32) | lo as u64
+        ((_hi as u64) << 32) | _lo as u64
     }
 }
 
@@ -54,12 +54,12 @@ pub fn rdtsc() -> u64 {
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
     let key_len = 30;
-    let mut table: u64 = 0;
-    let mut optype = 0;
-    let mut order: u32 = 0;
-    let mut keys = Vec::with_capacity(2 * key_len);
-    let mut obj = None;
-    let mut multiobj = None;
+    let mut _table: u64 = 0;
+    let mut _optype = 0;
+    let mut _order: u32 = 0;
+    let mut _keys = Vec::with_capacity(2 * key_len);
+    let mut _obj = None;
+    let mut _multiobj = None;
     {
         // First off, retrieve the arguments to the extension.
         let args = db.args();
@@ -73,8 +73,8 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             return 1;
         }
 
-        optype = args[args.len() - 1];
-        if optype == 3 {
+        _optype = args[args.len() - 1];
+        if _optype == 3 {
             db.debug_log("");
             return 0;
         }
@@ -85,22 +85,22 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
         let (s_table, rem) = args.split_at(8);
         let rem = rem.split_at(rem.len() - 1).0;
         let (key, ord) = rem.split_at(rem.len() - 4);
-        keys.extend_from_slice(key);
+        _keys.extend_from_slice(key);
 
         // Get the table id from the unwrapped arguments.
         for (idx, e) in s_table.iter().enumerate() {
-            table |= (*e as u64) << (idx << 3);
+            _table |= (*e as u64) << (idx << 3);
         }
 
         for (idx, e) in ord.iter().enumerate() {
-            order |= (*e as u32) << (idx << 3);
+            _order |= (*e as u32) << (idx << 3);
         }
     }
 
-    if optype == 1 {
+    if _optype == 1 {
         // Read operation
-        obj = db.get(table, &keys);
-        match obj {
+        _obj = db.get(_table, &_keys);
+        match _obj {
             Some(val) => {
                 db.resp(val.read());
                 return 0;
@@ -113,50 +113,50 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             }
         }
     } else {
-        multiobj = db.multiget(table, key_len as u16, &keys);
+        _multiobj = db.multiget(_table, key_len as u16, &_keys);
 
         // Compute part for this extension
-        if order > 0 {
-            if order >= 600 {
+        if _order > 0 {
+            if _order >= 600 {
                 let start = rdtsc();
                 while rdtsc() - start < 600 as u64 {}
-                order -= 600;
+                _order -= 600;
             }
 
             loop {
-                if order <= 2000 {
+                if _order <= 2000 {
                     let start = rdtsc();
-                    while rdtsc() - start < order as u64 {}
+                    while rdtsc() - start < _order as u64 {}
                     break;
                 } else {
                     let start = rdtsc();
                     while rdtsc() - start < 2000 as u64 {}
-                    order -= 2000;
+                    _order -= 2000;
                 }
             }
         }
 
-        match multiobj {
+        match _multiobj {
             Some(vals) => {
                 if vals.num() == 2 {
-                    let mut value1 = Vec::with_capacity(100);
-                    let mut value2 = Vec::with_capacity(100);
-                    let (key1, key2) = keys.split_at(key_len as usize);
-                    value1.extend_from_slice(vals.read());
+                    let mut _value1 = Vec::with_capacity(100);
+                    let mut _value2 = Vec::with_capacity(100);
+                    let (key1, key2) = _keys.split_at(key_len as usize);
+                    _value1.extend_from_slice(vals.read());
                     let _ = vals.next();
-                    value2.extend_from_slice(vals.read());
-                    if value1[0] > 0 && value2[0] < 255 {
-                        value1[0] -= 1;
-                        value2[0] += 1;
-                    } else if value2[0] > 0 && value1[0] < 255 {
-                        value2[0] -= 1;
-                        value1[0] += 1;
+                    _value2.extend_from_slice(vals.read());
+                    if _value1[0] > 0 && _value2[0] < 255 {
+                        _value1[0] -= 1;
+                        _value2[0] += 1;
+                    } else if _value2[0] > 0 && _value1[0] < 255 {
+                        _value2[0] -= 1;
+                        _value1[0] += 1;
                     }
 
-                    if let Some(mut buf1) = db.alloc(table, key1, value1.len() as u64) {
-                        if let Some(mut buf2) = db.alloc(table, key2, value2.len() as u64) {
-                            buf1.write_slice(&value1);
-                            buf2.write_slice(&value2);
+                    if let Some(mut buf1) = db.alloc(_table, key1, _value1.len() as u64) {
+                        if let Some(mut buf2) = db.alloc(_table, key2, _value2.len() as u64) {
+                            buf1.write_slice(&_value1);
+                            buf2.write_slice(&_value2);
                             db.put(buf1);
                             db.put(buf2);
                             return 0;

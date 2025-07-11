@@ -6,7 +6,6 @@ use sandstorm::buf::WriteBuf;
 use sandstorm::db::DB;
 use sandstorm::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-use sandstorm::boxed::Box;
 use sandstorm::convert::From;
 use sandstorm::rc::Rc;
 use sandstorm::result::Result;

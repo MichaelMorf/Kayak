@@ -19,8 +19,6 @@
 
 extern crate bincode;
 extern crate rustlearn;
-#[macro_use]
-extern crate sandstorm;
 
 use std::rc::Rc;
 
@@ -42,13 +40,13 @@ use sandstorm::pack::pack;
 /// Returns 0 on success, 1 on error.
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
-    let mut obj = None;
+    let mut _obj = None; // Prefix with _ to silence unused assignment warning
     let mut table: u64 = 0;
     let mut key_value: u32 = 0;
     let mut number: u32 = 0;
     let mut keys: Vec<u8> = Vec::with_capacity(30);
     let mut values: Vec<Vec<u8>> = Vec::new();
-    let mut ml_model: u8 = 0;
+    let mut _ml_model: u8 = 0; // Prefix with _ to silence unused assignment warning
     {
         // First off, retrieve the arguments to the extension.
         let args = db.args();
@@ -66,7 +64,7 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
         let (stable, remaining) = args.split_at(8);
         let (num, remaining) = remaining.split_at(4);
         let (model, key) = remaining.split_at(1);
-        ml_model = 0 | model[0] as u8;
+        _ml_model = 0 | model[0] as u8;
         keys.extend_from_slice(key);
         for (idx, e) in stable.iter().enumerate() {
             table |= (*e as u64) << (idx << 3);
@@ -83,13 +81,13 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
         // Replace GET! macro with direct logic
         let (server, _, val) = db.search_get_in_cache(table, &keys);
         if !server {
-            obj = val;
+            _obj = val;
         } else {
-            obj = db.get(table, &keys);
+            _obj = db.get(table, &keys);
         }
-        match obj {
+        match _obj {
             Some(val) => {
-                values.push(val.read().clone().to_vec());
+                values.push(val.read().to_vec()); // Remove redundant .clone()
             }
             None => {
                 let error = "Object does not exist";
@@ -107,19 +105,19 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             Some(model) => {
                 let mut response: f32 = 0.0;
                 let predict: Vec<f32> = bincode::deserialize(&value).unwrap();
-                if ml_model == 1 {
+                if _ml_model == 1 {
                     response = model
                         .lr_deserialized
                         .predict(&Array::from(&vec![predict]))
                         .unwrap()
                         .data()[0];
-                } else if ml_model == 2 {
+                } else if _ml_model == 2 {
                     response = model
                         .dr_deserialized
                         .predict(&Array::from(&vec![predict]))
                         .unwrap()
                         .data()[0];
-                } else if ml_model == 3 {
+                } else if _ml_model == 3 {
                     response = model
                         .rf_deserialized
                         .predict(&Array::from(&vec![predict]))

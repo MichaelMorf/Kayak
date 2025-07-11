@@ -21,7 +21,6 @@ extern crate sandstorm;
 
 use crypto_hash::{digest, Algorithm};
 
-use sandstorm::boxed::Box;
 use sandstorm::buf::{MultiReadBuf, ReadBuf};
 use sandstorm::db::DB;
 use sandstorm::pack::pack;
@@ -71,12 +70,12 @@ macro_rules! MULTIGET1 {
 pub fn init(db: Rc<dyn DB>) -> u64 {
     // Error code and response defined upfront so that results are written only
     // at the end of this function.
-    let mut err = INVALIDARG;
     let mut num: u32 = 0;
     let mut aggr: u64 = 0;
-    let mut optype: u8 = 0;
-    let mut obj: Option<ReadBuf> = None;
     let mut buf: Option<MultiReadBuf> = None;
+    let mut err: u8;
+    let mut optype: u8;
+    let mut obj: Option<ReadBuf>;
     {
         let arg: &[u8] = db.args();
         let (t, rem) = arg.split_at(size_of::<u64>());
@@ -96,13 +95,11 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
         }
 
         // Retrieve the list of keys to aggregate across.
-        //let obj = db.get(table, key);
         GET1!(db, table, key, obj);
 
         // Try performing the aggregate if the key list was successfully retrieved.
         if let Some(val) = obj {
             let value = val.read().split_at((KEYLENGTH as usize) * (num as usize)).0;
-
             MULTIGET1!(db, table, KEYLENGTH, value, buf);
         }
     }
@@ -111,27 +108,31 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             let mut i = 0;
             while vals.next() {
                 if i < num {
-                    if optype == 1 {
-                        let result = digest(Algorithm::MD5, vals.read());
-                        aggr += result[0] as u64;
-                    }
-                    if optype == 2 {
-                        let result = digest(Algorithm::SHA1, vals.read());
-                        aggr += result[0] as u64;
-                    }
-                    if optype == 3 {
-                        let result = digest(Algorithm::SHA256, vals.read());
-                        aggr += result[0] as u64;
-                    }
-                    if optype == 4 {
-                        let result = digest(Algorithm::SHA512, vals.read());
-                        aggr += result[0] as u64;
+                    match optype {
+                        1 => {
+                            let result = digest(Algorithm::MD5, vals.read());
+                            aggr += result[0] as u64;
+                        }
+                        2 => {
+                            let result = digest(Algorithm::SHA1, vals.read());
+                            aggr += result[0] as u64;
+                        }
+                        3 => {
+                            let result = digest(Algorithm::SHA256, vals.read());
+                            aggr += result[0] as u64;
+                        }
+                        4 => {
+                            let result = digest(Algorithm::SHA512, vals.read());
+                            aggr += result[0] as u64;
+                        }
+                        _ => {}
                     }
                 } else {
                     break;
                 }
                 i += 1;
             }
+            err = SUCCESSFUL;
         }
         None => {
             err = INVALIDKEY;
@@ -139,7 +140,6 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             return 0;
         }
     }
-    err = SUCCESSFUL;
     // First write in the response code.
     db.resp(pack(&err));
     // Second write the result.

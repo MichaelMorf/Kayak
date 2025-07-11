@@ -33,5 +33,6 @@ use sandstorm::db::DB;
 /// Returns a stub value for testing purposes.
 #[no_mangle]
 pub fn start(_db: Rc<dyn DB>) -> u64 {
+    let mut _obj = None; // Prefix with _ to silence unused assignment warning
     0
 }

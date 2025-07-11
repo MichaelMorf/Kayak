@@ -35,7 +35,7 @@ use sandstorm::size_of;
 /// Returns 0 on success, 1 on error.
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
-    let mut obj = None;
+    let mut _obj = None; // Prefix with _ to silence unused assignment warning
     let mut range: u32 = 0;
     let mut table: u64 = 0;
     let mut keys: Vec<u8> = Vec::with_capacity(30);
@@ -73,9 +73,9 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
     // Fix for loop syntax: add missing 'in'
     for _in in 0..range - 1 {
         // Finally, lookup the database for the object.
-        obj = db.get(table, &keys);
+        _obj = db.get(table, &keys);
 
-        match obj {
+        match _obj {
             // If the object was found, write it to the response.
             Some(val) => {
                 sum += val.read()[0] as u64;

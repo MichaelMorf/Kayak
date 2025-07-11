@@ -18,8 +18,6 @@
 //#![forbid(unsafe_code)]
 
 extern crate crypto;
-#[macro_use]
-extern crate sandstorm;
 extern crate openssl;
 
 use openssl::aes::{aes_ige, AesKey};
@@ -50,7 +48,7 @@ const ABSENTOBJECT: u8 = 0x4;
 /// Returns 0 on success, 1 on error.
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
-    let mut obj = None;
+    let mut _obj = None; // Prefix with _ to silence unused assignment warning
     let mut table: u64 = 0;
     let mut status = INVALIDARG;
     let mut username: Vec<u8> = Vec::with_capacity(30);

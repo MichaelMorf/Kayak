@@ -18,9 +18,6 @@
 //#![forbid(unsafe_code)]
 
 extern crate db;
-#[macro_use]
-extern crate sandstorm;
-
 use std::rc::Rc;
 
 use db::cycles;
@@ -39,7 +36,7 @@ use sandstorm::pack::pack;
 /// Returns 0 on success, 1 on error.
 #[no_mangle]
 pub fn init(db: Rc<dyn DB>) -> u64 {
-    let mut obj = None;
+    let mut _obj = None; // Prefix with _ to silence unused assignment warning
     let mut t_table: u64 = 0;
     let mut num: u32 = 0;
     let mut ord: u32 = 0;
@@ -82,12 +79,12 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
         // Replacing GET! macro with direct logic to avoid yield/coroutine issues
         let (server, _, val) = db.search_get_in_cache(t_table, &keys);
         if !server {
-            obj = val;
+            _obj = val;
         } else {
-            obj = db.get(t_table, &keys);
+            _obj = db.get(t_table, &keys);
         }
         if i == num - 1 {
-            match obj {
+            match _obj {
                 // If the object was found, use the response.
                 Some(val) => {
                     mul = val.read()[0] as u64;
@@ -102,7 +99,7 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             }
         } else {
             // find the key for the second request.
-            match obj {
+            match _obj {
                 // If the object was found, find the key from the response.
                 Some(val) => {
                     keys[0..4].copy_from_slice(&val.read()[0..4]);
