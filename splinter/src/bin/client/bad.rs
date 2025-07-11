@@ -24,7 +24,6 @@ mod setup;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
 use std::sync::Arc;
 
 use db::config;
@@ -121,7 +120,7 @@ impl Bad {
 
         // Sample a key, and convert into a little endian byte array.
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.key_buf[0..mem::size_of::<u32>()].copy_from_slice(&k);
 
         if is_get {

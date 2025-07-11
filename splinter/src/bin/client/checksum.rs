@@ -13,8 +13,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#![feature(generators, generator_trait)]
-
 extern crate bytes;
 extern crate crypto_hash;
 extern crate db;
@@ -31,7 +29,6 @@ use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
 use std::mem::transmute;
-use std::ops::{Generator, GeneratorState};
 use std::pin::Pin;
 use std::sync::Arc;
 
@@ -149,7 +146,7 @@ impl CHECKSUM {
 
         // Sample a key, and convert into a little endian byte array.
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.key_buf[0..4].copy_from_slice(&k);
 
         if is_get {
@@ -157,7 +154,7 @@ impl CHECKSUM {
         } else {
             self.multikey_buf[0..4].copy_from_slice(&k);
             let k = self.key_rng.sample(&mut self.rng) as u32;
-            let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+            let k = k.to_le_bytes();
             self.multikey_buf[30..34].copy_from_slice(&k);
             put(t, self.multikey_buf.as_slice())
         }

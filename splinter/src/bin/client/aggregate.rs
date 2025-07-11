@@ -143,9 +143,9 @@ impl AggregateSendRecv {
 
         // Pre-populate the extension name and table id.
         i_buff.extend_from_slice("aggregate".as_bytes());
-        i_buff.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(1u64.to_le()) });
-        i_buff.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(num.to_le()) });
-        i_buff.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(ord.to_le()) });
+        i_buff.extend_from_slice(&1u64.to_le_bytes());
+        i_buff.extend_from_slice(&num.to_le_bytes());
+        i_buff.extend_from_slice(&ord.to_le_bytes());
         i_buff.resize(len, 0);
 
         // Allocate and init a buffer into which keys will be generated.
@@ -185,7 +185,7 @@ impl AggregateSendRecv {
         let t = self.t_dist.sample(&mut self.random) as u32;
 
         let k = self.k_dist.sample(&mut self.random) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
 
         (t, k)
     }

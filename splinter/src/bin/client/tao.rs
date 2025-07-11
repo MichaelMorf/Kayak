@@ -221,7 +221,7 @@ impl TaoSendRecv {
         let t = self.t_dist.sample(&mut self.random) as u32;
 
         let k = self.k_dist.sample(&mut self.random) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
 
         let o = self.random.gen::<u32>() % 100 >= self.assoc_p as u32;
 

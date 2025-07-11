@@ -28,7 +28,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::mem;
-use std::mem::transmute;
 use std::sync::Arc;
 
 use self::bytes::Bytes;
@@ -148,7 +147,7 @@ impl Pushback {
 
         // Sample a key, and convert into a little endian byte array.
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.key_buf[0..mem::size_of::<u32>()].copy_from_slice(&k);
 
         let o = self.order_rng.sample(&mut self.rng).abs() as u32;

@@ -13,8 +13,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#![feature(integer_atomics)]
-
 extern crate db;
 extern crate splinter;
 

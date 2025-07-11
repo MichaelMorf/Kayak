@@ -19,7 +19,6 @@ extern crate splinter;
 
 use std::mem;
 use std::mem::transmute;
-use std::ops::{Generator, GeneratorState};
 use std::pin::Pin;
 use std::slice;
 use std::sync::Arc;
@@ -174,16 +173,16 @@ impl Workload for YCSBT {
         let is_get = (self.rng.gen::<u32>() % 100) >= self.put_pct as u32;
         if is_get == true {
             let k = self.key_rng.sample(&mut self.rng) as u32;
-            let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+            let k = k.to_le_bytes();
             self.invoke_get[13..17].copy_from_slice(&k);
             (t, self.invoke_get.as_slice())
         } else {
             let k = self.key_rng.sample(&mut self.rng) as u32;
-            let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+            let k = k.to_le_bytes();
             self.invoke_get_modify[13..17].copy_from_slice(&k);
 
             let k = self.key_rng.sample(&mut self.rng) as u32;
-            let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+            let k = k.to_le_bytes();
             self.invoke_get_modify[43..47].copy_from_slice(&k);
             (t, self.invoke_get_modify.as_slice())
         }
@@ -194,7 +193,7 @@ impl Workload for YCSBT {
         let t = self.tenant_rng.sample(&mut self.rng) as u32;
 
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.key_buf[0..mem::size_of::<u32>()].copy_from_slice(&k);
 
         (t, self.key_buf.as_slice())
@@ -206,7 +205,7 @@ impl Workload for YCSBT {
         let t = self.tenant_rng.sample(&mut self.rng) as u32;
 
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.key_buf[0..mem::size_of::<u32>()].copy_from_slice(&k);
         self.value_buf[0..mem::size_of::<u32>()].copy_from_slice(&k);
 
@@ -218,11 +217,11 @@ impl Workload for YCSBT {
         let t = self.tenant_rng.sample(&mut self.rng) as u32;
 
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.multikey_buf[0..mem::size_of::<u32>()].copy_from_slice(&k);
 
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.multikey_buf[30..34].copy_from_slice(&k);
 
         (t, 2, self.multikey_buf.as_slice())

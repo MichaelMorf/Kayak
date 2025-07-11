@@ -13,8 +13,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#![feature(generators, generator_trait)]
-
 extern crate bytes;
 extern crate db;
 extern crate rand;
@@ -30,7 +28,6 @@ use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
 use std::mem::transmute;
-use std::ops::{Generator, GeneratorState};
 use std::pin::Pin;
 use std::slice;
 use std::sync::Arc;
@@ -144,7 +141,7 @@ impl YCSBT {
 
         // Sample a key, and convert into a little endian byte array.
         let k = self.key_rng.sample(&mut self.rng) as u32;
-        let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+        let k = k.to_le_bytes();
         self.key_buf[0..4].copy_from_slice(&k);
 
         if is_get {
@@ -152,7 +149,7 @@ impl YCSBT {
         } else {
             self.multikey_buf[0..4].copy_from_slice(&k);
             let k = self.key_rng.sample(&mut self.rng) as u32;
-            let k: [u8; 4] = unsafe { transmute(k.to_le()) };
+            let k = k.to_le_bytes();
             self.multikey_buf[30..34].copy_from_slice(&k);
             put(t, self.multikey_buf.as_slice())
         }
@@ -242,9 +239,11 @@ where
     // copies of the extension name, table id, and key.
     invoke_get: RefCell<Vec<u8>>,
 
+
     // Payload for an invoke() based put operation. Required in order to avoid making intermediate
     // copies of the extension name, table id, key length, key, and value.
     invoke_get_modify: RefCell<Vec<u8>>,
+
 
     // Flag to indicate if the procedure is finished or not.
     finished: bool,
