@@ -1,5 +1,5 @@
 use super::{Available, HUP, NONE, READ, WRITE};
-use nix::sys::epoll::*;
+use nix::sys::event::*;
 use std::default::Default;
 use std::os::unix::io::AsRawFd;
 use std::os::unix::io::RawFd;
