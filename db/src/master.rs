@@ -1510,7 +1510,7 @@ impl Master {
         req: Packet<UdpHeader, EmptyMetadata>,
         res: Packet<UdpHeader, EmptyMetadata>,
     ) -> Result<
-        Box<Task>,
+        Box<dyn Task>,
         (
             Packet<UdpHeader, EmptyMetadata>,
             Packet<UdpHeader, EmptyMetadata>,
@@ -1588,9 +1588,10 @@ impl Master {
                     alloc,
                     model,
                 ));
-                let gen = ext.get(Rc::clone(&db) as Rc<dyn DB>);
-
-                return Ok(Box::new(Container::new(TaskPriority::REQUEST, db, gen)));
+                // Use ext.as_ref().get to call get on Extension
+                let gen = ext.as_ref().get(Rc::clone(&db) as Rc<dyn DB>);
+                // Remove extra argument from Container::new
+                return Ok(Box::new(Container::new(TaskPriority::REQUEST, db)));
             }
         }
 
@@ -1748,7 +1749,7 @@ impl Master {
         });
 
         // Return a native task.
-        return Ok(Box::new(Native::new(TaskPriority::REQUEST, gen)));
+        return Ok(Box::new(Native::new(TaskPriority::REQUEST)));
     }
 
     /// Handles the install() RPC request.
