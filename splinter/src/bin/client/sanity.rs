@@ -127,14 +127,14 @@ impl Executable for SanitySend {
         if self.puts > 0 {
             // Determine the key and value to be inserted into the database.
             let temp = self.puts;
-            let temp: [u8; 8] = unsafe { transmute(temp.to_le()) };
+            let temp: [u8; 8] = u64::to_ne_bytes(temp.to_le());
 
             // Send out either a put() or invoke().
             if self.native == true {
                 self.sender.send_put(100, 100, &temp, &temp, self.puts);
             } else {
                 let mut payload = Vec::new();
-                let table: [u8; 8] = unsafe { transmute(100u64.to_le()) };
+                let table: [u8; 8] = u64::to_ne_bytes(100u64.to_le());
                 payload.extend_from_slice("put".as_bytes()); // Name
                 payload.extend_from_slice(&table); // Table Id
                 payload.extend_from_slice(&[8, 0]); // Key Length
@@ -150,14 +150,14 @@ impl Executable for SanitySend {
         // If there are no pending puts but there are pending gets, then issue one and return.
         if self.gets > 0 {
             let temp = self.gets;
-            let temp: [u8; 8] = unsafe { transmute(temp.to_le()) };
+            let temp: [u8; 8] = u64::to_ne_bytes(temp.to_le());
 
             // Send out either a get() or invoke().
             if self.native == true {
                 self.sender.send_get(100, 100, &temp, self.gets);
             } else {
                 let mut payload = Vec::new();
-                let table: [u8; 8] = unsafe { transmute(100u64.to_le()) };
+                let table: [u8; 8] = u64::to_ne_bytes(100u64.to_le());
                 payload.extend_from_slice("iget".as_bytes()); // Name
                 payload.extend_from_slice(&table); // Table Id
                 payload.extend_from_slice(&temp); // Key

@@ -182,7 +182,7 @@ where
     // The percentage of operations that are extention. The rest are native.
     ext_p: f32,
 
-    /// Finer latency measurements
+    // Finer latency measurements
     inv_lats: Vec<u64>,
     nat_lats: Vec<u64>,
 
@@ -199,7 +199,7 @@ where
     xloop_last_recvd: u64,
     xloop_last_rdtsc: u64,
     xloop_last_rate: f32,
-    xloop_last_X: f32,
+    xloop_last_x: f32,
 
 
     rloop_last_recvd: u64,
@@ -339,9 +339,7 @@ where
             recvd: 0,
             aborted: 0,
             latencies: Vec::with_capacity(resps as usize),
-            /// The percentage of operations that are extention. The rest are native.
             ext_p: config.invoke_p as f32,
-            /// Finer latency measurements
             inv_lats: Vec::with_capacity(resps as usize),
             nat_lats: Vec::with_capacity(resps as usize),
             max_out: config.max_out as f32,
@@ -351,7 +349,7 @@ where
             last_op: 1,
             xloop_last_rdtsc: cycles::rdtsc(),
             xloop_last_rate: 0.0,
-            xloop_last_X: 50.5,
+            xloop_last_x: 50.5,
             xloop_last_recvd: 0,
             kth: 0,
             rloop_last_recvd: 0,
@@ -633,8 +631,8 @@ where
                     }
                 }
 
-                /// Cleaning starts here
-                ///
+                // Cleaning starts here
+                //
                 // kth measurement here
                 let len = self.latencies.len();
 
@@ -652,7 +650,7 @@ where
                     if self.rloop_factor != 0 && (rloop_rdtsc - self.rloop_last_rdtsc > 2400000000 / self.rloop_factor as u64) &&
                         len > 100 && len % self.rloop_factor == 0 {
 
-                        let rloop_rate = 2.4e6 * (self.recvd - self.rloop_last_recvd) as f32 / (rloop_rdtsc - self.rloop_last_rdtsc) as f32;
+                        let _rloop_rate = 2.4e6 * (self.recvd - self.rloop_last_recvd) as f32 / (rloop_rdtsc - self.rloop_last_rdtsc) as f32;
                         self.rloop_last_rdtsc = rloop_rdtsc;
                         self.rloop_last_recvd = self.recvd;
 
@@ -699,41 +697,41 @@ where
                         let delta_rate = xloop_rate - self.xloop_last_rate;
                         self.xloop_last_rate = xloop_rate;
 
-                        let delta_X = self.ext_p - self.xloop_last_X;
-                        self.xloop_last_X = self.ext_p;
+                        let delta_x = self.ext_p - self.xloop_last_x;
+                        self.xloop_last_x = self.ext_p;
 
-                        let grad = 2.0 * delta_rate / delta_X;
+                        let grad = 2.0 * delta_rate / delta_x;
 
-                        let mut bounded_offset_X: f32 = -1.0;
+                        let mut bounded_offset_x: f32 = -1.0;
                         if grad > 0.0 {
                             if grad < 1.0 {
-                                bounded_offset_X = 1.0;
+                                bounded_offset_x = 1.0;
                             } else if grad > 20.0 {
-                                bounded_offset_X = 5.0;
+                                bounded_offset_x = 5.0;
                             } else {
-                                bounded_offset_X = grad;
+                                bounded_offset_x = grad;
                             }
                         } else {
                             if grad > -1.0 {
-                                bounded_offset_X = -1.0;
+                                bounded_offset_x = -1.0;
                             } else if grad < -20.0 {
-                                bounded_offset_X = -5.0;
+                                bounded_offset_x = -5.0;
                             } else {
-                                bounded_offset_X = grad;
+                                bounded_offset_x = grad;
                             }
                         }
 
-                        let new_X = bounded_offset_X + self.ext_p;
-                        if new_X > 100.0 || new_X < 0.0 {
-                            self.ext_p -= bounded_offset_X; // bounce back
+                        let new_x = bounded_offset_x + self.ext_p;
+                        if new_x > 100.0 || new_x < 0.0 {
+                            self.ext_p -= bounded_offset_x; // bounce back
                         } else {
-                            self.ext_p = new_X;
+                            self.ext_p = new_x;
                         }
 
                         // Debug output
 //                        info!("rate {} d_rate {} ext_p {} op {}", rate, d_rate, self.ext_p, self.last_op);
                         trace!("rdtsc {} len {} tail {} out {} recvd {} rate {} d_rate {} ext_p {} off {} XL",
-                               xloop_rdtsc, len, self.kth, self.max_out, self.recvd, xloop_rate, delta_rate, self.ext_p, bounded_offset_X);
+                               xloop_rdtsc, len, self.kth, self.max_out, self.recvd, xloop_rate, delta_rate, self.ext_p, bounded_offset_x);
 
                     }
 

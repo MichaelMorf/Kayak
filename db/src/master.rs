@@ -727,16 +727,18 @@ impl Master {
 
         // Read fields off the request header.
         let mut tenant_id: TenantId = 0;
-        let mut table_id: TableId = 0;
+        let mut _table_id: TableId = 0; // Prefix with _ to silence unused variable warning
         let mut key_length = 0;
         let mut rpc_stamp = 0;
+        let mut _req_generator = GetGenerator::InvalidGenerator; // Prefix with _ to silence unused variable warning
 
         {
             let hdr = req.get_header();
             tenant_id = hdr.common_header.tenant as TenantId;
-            table_id = hdr.table_id as TableId;
+            _table_id = hdr.table_id as TableId;
             key_length = hdr.key_length;
             rpc_stamp = hdr.common_header.stamp;
+            _req_generator = hdr.generator.clone();
         }
 
         // Next, add a header to the response packet.

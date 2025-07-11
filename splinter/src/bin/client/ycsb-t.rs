@@ -27,7 +27,6 @@ mod setup;
 use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
-use std::pin::Pin;
 use std::slice;
 use std::sync::Arc;
 

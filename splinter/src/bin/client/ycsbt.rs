@@ -18,7 +18,6 @@ extern crate rand;
 extern crate splinter;
 
 use std::mem;
-use std::pin::Pin;
 use std::slice;
 use std::sync::Arc;
 

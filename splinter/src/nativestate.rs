@@ -65,7 +65,7 @@ impl PushbackState {
     /// *`number`: Number of records to aggregate
     /// *`order`: The amount of compute in each extension.
     pub fn execute_task(&mut self, number: u32, order: u32) {
-        let mut mul: u64 = 0;
+        let mut _mul: u64 = 0;
         let mut keys: Vec<u8> = Vec::with_capacity(30);
         keys.extend_from_slice(&self.readset[0].key);
         for i in 0..number {
@@ -75,7 +75,7 @@ impl PushbackState {
                 match obj {
                     // If the object was found, use the response.
                     Some(val) => {
-                        mul = val.read()[0] as u64;
+                        _mul = val.read()[0] as u64;
                     }
 
                     // If the object was not found, write an error message to the

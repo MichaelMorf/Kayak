@@ -52,6 +52,8 @@ pub struct Container<'a> {
     // The actual generator/coroutine containing the extension's code to be
     // executed inside the database.
     // gen: Option<Pin<Box<Generator<Yield = u64, Return = u64>>>>,
+    #[allow(dead_code)]
+    ext: Arc<Extension>,
 }
 
 // Implementation of methods on Container.

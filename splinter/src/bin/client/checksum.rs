@@ -272,8 +272,8 @@ where
             + mem::size_of::<u8>();
         let mut invoke_get: Vec<u8> = Vec::with_capacity(payload_len);
         invoke_get.extend_from_slice("checksum".as_bytes());
-        invoke_get.extend_from_slice(&unsafe { transmute::<u64, [u8; 8]>(table_id.to_le()) });
-        invoke_get.extend_from_slice(&unsafe { transmute::<u32, [u8; 4]>(num.to_le()) });
+        invoke_get.extend_from_slice(&u64::to_ne_bytes(table_id.to_le()));
+        invoke_get.extend_from_slice(&u32::to_ne_bytes(num.to_le()));
         invoke_get.extend_from_slice(&[0; 8]); // Placeholder for key
         invoke_get.extend_from_slice(&[CHECKSUM_ALGO]);
         invoke_get.resize(payload_len, 0);
