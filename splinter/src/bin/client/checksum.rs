@@ -561,10 +561,10 @@ where
                     aggr += result[0] as u64;
                 }
                 if CHECKSUM_ALGO <= 0 && CHECKSUM_ALGO > 4 {
-                    return;
+                    return 0;
                 }
             } else {
-                return;
+                return 0;
             }
         }
         if aggr != 0 {
