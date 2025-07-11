@@ -32,8 +32,8 @@ pub struct PortQueue {
     // The Arc cost here should not affect anything, since we are really not doing anything to make it go in and out of
     // scope.
     pub port: Arc<PmdPort>,
-    stats_rx: Arc<CacheAligned<PortStats>>,
-    stats_tx: Arc<CacheAligned<PortStats>>,
+    _stats_rx: Arc<CacheAligned<PortStats>>,
+    _stats_tx: Arc<CacheAligned<PortStats>>,
     port_id: i32,
     txq: i32,
     rxq: i32,
@@ -159,8 +159,8 @@ impl PmdPort {
                 port_id: port.port,
                 txq: txq,
                 rxq: rxq,
-                stats_rx: port.stats_rx[rxq as usize].clone(),
-                stats_tx: port.stats_tx[txq as usize].clone(),
+                _stats_rx: port.stats_rx[rxq as usize].clone(),
+                _stats_tx: port.stats_tx[txq as usize].clone(),
             }))
         }
     }
