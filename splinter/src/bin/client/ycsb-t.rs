@@ -665,35 +665,13 @@ where
         );
     }
 
-    #[allow(unreachable_code)]
     /// This method executes the task.
     ///
     /// # Arguments
     /// *`order`: The amount of compute in each extension.
     pub fn execute_task(&mut self, order: u32) {
-        let mut generator = move || {
-            // Compute part for this extension
-            let start = cycles::rdtsc();
-            while cycles::rdtsc() - start < order as u64 {}
-            return 0;
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
-        };
-
-        match Pin::new(&mut generator).resume(()) {
-            GeneratorState::Yielded(val) => {
-                if val != 0 {
-                    panic!("Pushback native execution is buggy");
-                }
-            }
-            GeneratorState::Complete(val) => {
-                if val != 0 {
-                    panic!("Pushback native execution is buggy");
-                }
-            }
-        }
+        let start = cycles::rdtsc();
+        while cycles::rdtsc() - start < order as u64 {}
     }
 }
 

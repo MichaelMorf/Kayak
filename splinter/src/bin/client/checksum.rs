@@ -212,6 +212,7 @@ where
     // copies of the extension name, table id, and key.
     invoke_get: RefCell<Vec<u8>>,
 
+
     // Flag to indicate if the procedure is finished or not.
     finished: bool,
 
@@ -540,57 +541,38 @@ where
     /// # Arguments
     /// *`order`: The amount of compute in each extension.
     pub fn execute_task(&mut self, records: &[u8], _num: u32) {
-        let mut generator = move || {
-            let mut aggr: u64 = 0;
-            for record in records.chunks(139) {
-                let vals = record.split_at(39).1;
-                if vals.len() == 100 {
-                    if CHECKSUM_ALGO == 1 {
-                        let result = digest(Algorithm::MD5, vals);
-                        aggr += result[0] as u64;
-                    }
-                    if CHECKSUM_ALGO == 2 {
-                        let result = digest(Algorithm::SHA1, vals);
-                        aggr += result[0] as u64;
-                    }
-                    if CHECKSUM_ALGO == 3 {
-                        let result = digest(Algorithm::SHA256, vals);
-                        aggr += result[0] as u64;
-                    }
-                    if CHECKSUM_ALGO == 4 {
-                        let result = digest(Algorithm::SHA512, vals);
-                        aggr += result[0] as u64;
-                    }
-                    if CHECKSUM_ALGO <= 0 && CHECKSUM_ALGO > 4 {
-                        return 1;
-                    }
-                } else {
-                    return 2;
+        let mut aggr: u64 = 0;
+        for record in records.chunks(139) {
+            let vals = record.split_at(39).1;
+            if vals.len() == 100 {
+                if CHECKSUM_ALGO == 1 {
+                    let result = digest(Algorithm::MD5, vals);
+                    aggr += result[0] as u64;
                 }
-            }
-            if aggr != 0 {
-                aggr -= aggr;
-            }
-
-            return aggr;
-
-            // XXX: This yield is required to get the compiler to compile this closure into a
-            // generator. It is unreachable and benign.
-            yield 0;
-        };
-
-        match Pin::new(&mut generator).resume(()) {
-            GeneratorState::Yielded(val) => {
-                if val != 0 {
-                    panic!("Checksum native execution is buggy");
+                if CHECKSUM_ALGO == 2 {
+                    let result = digest(Algorithm::SHA1, vals);
+                    aggr += result[0] as u64;
                 }
-            }
-            GeneratorState::Complete(val) => {
-                if val != 0 {
-                    panic!("Checksum native execution is buggy");
+                if CHECKSUM_ALGO == 3 {
+                    let result = digest(Algorithm::SHA256, vals);
+                    aggr += result[0] as u64;
                 }
+                if CHECKSUM_ALGO == 4 {
+                    let result = digest(Algorithm::SHA512, vals);
+                    aggr += result[0] as u64;
+                }
+                if CHECKSUM_ALGO <= 0 && CHECKSUM_ALGO > 4 {
+                    return;
+                }
+            } else {
+                return;
             }
         }
+        if aggr != 0 {
+            aggr -= aggr;
+        }
+
+        return aggr;
     }
 }
 
