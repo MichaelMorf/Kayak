@@ -7,7 +7,7 @@ pub fn cpuid() {
             "mov eax, 0x2",
             "mov ecx, 0x0",
             "cpuid",
-            out("eax") _, out("ebx") _, out("ecx") _, out("edx") _,
+            out("eax") _, out("esi") _, out("ecx") _, out("edx") _,
             options(nomem, nostack, preserves_flags)
         );
     }

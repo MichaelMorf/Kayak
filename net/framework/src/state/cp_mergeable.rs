@@ -118,7 +118,7 @@ impl<T: AddAssign<T> + Default + Clone> ICpMergeableStoreControlPlane<T> for CpM
 
 /// Create a `CpMergeableStore`. `delay` specifies the number of buckets buffered together, while `channel_size`
 /// specifies the number of outstanding messages.
-pub fn new_cp_mergeable_store<T: AddAssign<T> + Default + Clone>(
+pub fn new_cp_mergeable_store<T: AddAssign<T> + Default + Clone + 'static>(
     delay: usize,
     channel_size: usize,
 ) -> (CpMergeableStoreDataPath<T>, Box<dyn ICpMergeableStoreControlPlane<T>>) {
