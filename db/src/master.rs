@@ -117,7 +117,7 @@ impl Master {
         // and a 100 Byte value.
         for i in 1..(num + 1) {
             let value: [u8; 4] = 255u32.to_le_bytes();
-            let temp: [u8; 4] = i.to_le_bytes();
+            let temp = i.to_le_bytes();
             let _ = key[0..4].copy_from_slice(&temp);
             let _ = val[0..4].copy_from_slice(&value);
 
@@ -157,7 +157,7 @@ impl Master {
 
         // Setup the object table with num objects.
         for i in 1..(num + 1) {
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+            let temp = i.to_le_bytes();
             let _ = key[0..4].copy_from_slice(&temp);
 
             let obj = self
@@ -179,14 +179,14 @@ impl Master {
         // Populate the assoc table. Each object gets four assocs to it's
         // neighbours.
         for i in 1..(num + 1) {
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+            let temp = i.to_le_bytes();
             let _ = key[0..4].copy_from_slice(&temp);
 
             // Assoc list for this particular object.
             let mut list: Vec<u8> = Vec::new();
 
             for a in 1u32..5u32 {
-                let temp: [u8; 4] = unsafe { transmute(((i + a) % num).to_le()) };
+                let temp = ((i + a) % num).to_le_bytes();
                 let _ = key[10..14].copy_from_slice(&temp);
                 list.extend_from_slice(&temp);
                 list.extend_from_slice(&[0; 12]);
@@ -246,12 +246,12 @@ impl Master {
             let mut key = vec![0; 8];
             let mut val = vec![];
 
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+            let temp = i.to_le_bytes();
             let _ = key[0..4].copy_from_slice(&temp);
 
             for e in 0..N_AGG {
                 let mut k = vec![0; K_LEN as usize];
-                let t: [u8; 4] = unsafe { transmute(((i * N_AGG + e) % records).to_le()) };
+                let t = ((i * N_AGG + e) % records).to_le_bytes();
                 let _ = k[0..4].copy_from_slice(&t);
 
                 val.extend_from_slice(&k);
@@ -269,7 +269,7 @@ impl Master {
             let mut key = vec![0; K_LEN as usize];
             let mut val = vec![0; V_LEN as usize];
 
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+            let temp = i.to_le_bytes();
             let _ = key[0..4].copy_from_slice(&temp);
             let _ = val[0..4].copy_from_slice(&temp);
 
@@ -314,7 +314,7 @@ impl Master {
             let mut key = vec![0; 30];
             for (row, line) in data.lines().enumerate() {
                 // Prepare the key for the record.
-                let temp: [u8; 4] = unsafe { transmute(((row + 1) as u32).to_le()) };
+                let temp = ((row + 1) as u32).to_le_bytes();
                 let _ = key[0..4].copy_from_slice(&temp);
 
                 // Prepare the value for the record.
@@ -363,7 +363,7 @@ impl Master {
         // Allocate objects, and fill up the above table. Each object consists of a 30 Byte key
         // and a 40 Byte value(24 byte HASH followed by 16 byte SALT).
         for i in 1..(num + 1) {
-            let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+            let temp = i.to_le_bytes();
             let _ = username[0..4].copy_from_slice(&temp);
             let _ = password[0..4].copy_from_slice(&temp);
             let _ = hash_salt[24..28].copy_from_slice(&temp);
@@ -429,7 +429,7 @@ impl Master {
 
             // Setup the object table with num objects.
             for i in 1..(num + 1) {
-                let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+                let temp = i.to_le_bytes();
                 let _ = key[0..4].copy_from_slice(&temp);
 
                 let obj = self
@@ -453,14 +453,14 @@ impl Master {
             // Populate the assoc table. Each object gets four assocs to it's
             // neighbours.
             for i in 1..(num + 1) {
-                let temp: [u8; 4] = unsafe { transmute(i.to_le()) };
+                let temp = i.to_le_bytes();
                 let _ = key[0..4].copy_from_slice(&temp);
 
                 // Assoc list for this particular object.
                 let mut list: Vec<u8> = Vec::new();
 
                 for a in 1u32..5u32 {
-                    let temp: [u8; 4] = unsafe { transmute(((i + a) % num).to_le()) };
+                    let temp = ((i + a) % num).to_le_bytes();
                     let _ = key[10..14].copy_from_slice(&temp);
                     list.extend_from_slice(&temp);
                     list.extend_from_slice(&[0; 12]);
@@ -489,7 +489,7 @@ impl Master {
             let mut key = vec![0; 30];
             for (row, line) in data.lines().enumerate() {
                 // Prepare the key for the record.
-                let temp: [u8; 4] = unsafe { transmute(((row + 1) as u32).to_le()) };
+                let temp = ((row + 1) as u32).to_le_bytes();
                 let _ = key[0..4].copy_from_slice(&temp);
 
                 // Prepare the value for the record.
@@ -536,7 +536,7 @@ impl Master {
         // and a 100 Byte value.
         for i in 1..(num + 1) {
             let value: [u8; 4] = 255u32.to_le_bytes();
-            let temp: [u8; 4] = i.to_le_bytes();
+            let temp = i.to_le_bytes();
             let _ = key[0..4].copy_from_slice(&temp);
             let _ = val[0..4].copy_from_slice(&value);
 
@@ -1683,7 +1683,7 @@ impl Master {
                                 let (optype, rem) = record.split_at(1);
                                 let (mut version, rem) = rem.split_at(8);
                                 let (key, value) = rem.split_at(key_len);
-                                let version: Version = Version::from_le_bytes(version.read_u64::<LittleEndian>().unwrap().to_le_bytes());
+                                let version: Version = unsafe { transmute(version.read_u64::<LittleEndian>().unwrap()) };
                                 match parse_record_optype(optype) {
                                     OpType::SandstormRead => {
                                         tx.record_get(Record::new(OpType::SandstormRead, version, Bytes::from(key), Bytes::from(value)));
@@ -1782,7 +1782,7 @@ impl Master {
         // Check if the tenant provided lengths match the actual request length.
         if buf.len() != size_of::<InstallRequest>() + name_l + extn_l {
             res.common_header.status = RpcStatus::StatusMalformedRequest;
-            let res: [u8; size_of::<InstallResponse>()] = unsafe { std::ptr::read(&res as *const _ as *const [u8; size_of::<InstallResponse>()]) };
+            let res: [u8; size_of::<InstallResponse>()] = unsafe { transmute(res) };
             let mut ret: Vec<u8> = Vec::new();
             ret.extend_from_slice(&res);
             return ret;
@@ -1814,7 +1814,7 @@ impl Master {
             }
         }
 
-        let res: [u8; size_of::<InstallResponse>()] = unsafe { std::ptr::read(&res as *const _ as *const [u8; size_of::<InstallResponse>()]) };
+        let res: [u8; size_of::<InstallResponse>()] = unsafe { transmute(res) };
         let mut ret: Vec<u8> = Vec::new();
         ret.extend_from_slice(&res);
         return ret;
@@ -1895,7 +1895,7 @@ impl Service for Master {
         ),
     > {
         // Based on the opcode, call the relevant RPC handler.
-               match op {
+        match op {
             OpCode::SandstormGetRpc => {
                 return self.get_native(req, res);
             }
