@@ -1589,7 +1589,7 @@ impl Master {
                     model,
                 ));
                 // Remove call to ext.get and the gen variable
-                return Ok(Box::new(Container::new(TaskPriority::REQUEST, db)));
+                return Ok(Box::new(Container::new(TaskPriority::REQUEST, db, ext)));
             }
         }
 
@@ -1912,7 +1912,7 @@ impl Service for Master {
                        Packet<UdpHeader, EmptyMetadata>,
         ),
         (
-            Packet<UdpHeader>,
+                       Packet<UdpHeader>,
             Packet<UdpHeader, EmptyMetadata>,
         ),
     > {
