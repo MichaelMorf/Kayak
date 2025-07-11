@@ -20,7 +20,7 @@ regex = "0.2.10"
 lazy_static = "*"
 net2 = "*"
 # NIX restricts us to just unix for now, we can fix this if someone cares at a later point.
-nix = "*"
+nix = "0.26"
 # Figure out if we want this permanently or just for now.
 rust-sctp = { git="https://github.com/netsys/rust-sctp", optional = true}
 toml = "0.4.5"
