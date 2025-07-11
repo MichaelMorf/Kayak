@@ -14,9 +14,7 @@
  */
 
 use std::cell::Cell;
-use std::ops::{Generator, GeneratorState};
 use std::panic::*;
-use std::pin::Pin;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -63,10 +61,6 @@ pub struct Container {
     // is executing in the system.
     ext: Arc<Extension>,
 
-    // The actual generator/coroutine containing the extension's code to be
-    // executed inside the database.
-    gen: Pin<Box<Generator<Yield = u64, Return = u64>>>,
-
     // The identifier to uniquely identify a task.
     id: u64,
 }
@@ -94,8 +88,6 @@ impl Container {
         ext: Arc<Extension>,
         id: u64,
     ) -> Container {
-        // The generator is initialized to a dummy. The first call to run() will
-        // retrieve the actual generator from the extension.
         Container {
             state: INITIALIZED,
             priority: prio,
@@ -103,10 +95,6 @@ impl Container {
             db_time: 0,
             db: Cell::new(Some(context)),
             ext: ext,
-            gen: Box::pin(|| {
-                yield 0;
-                return 0;
-            }),
             id: id,
         }
     }
@@ -116,57 +104,9 @@ impl Container {
 impl Task for Container {
     /// Refer to the Task trait for Documentation.
     fn run(&mut self) -> (TaskState, u64) {
-        let start = cycles::rdtsc();
-
-        // If the task has never run before, retrieve the generator for the
-        // extension first.
-        if self.state == INITIALIZED {
-            let context = self.db.replace(None).unwrap();
-            self.gen = self.ext.get(Rc::clone(&context) as Rc<DB>);
-            self.db.set(Some(context));
-        }
-
-        // Resume the task if need be. The task needs to be run/resumed only
-        // if it is in the INITIALIZED or YIELDED state. Nothing needs to be
-        // done if it has already completed, or was aborted.
-        if self.state == INITIALIZED || self.state == YIELDED || self.state == WAITING {
-            self.state = RUNNING;
-
-            // Catch any panics thrown from within the extension.
-            let res = catch_unwind(AssertUnwindSafe(|| match self.gen.as_mut().resume(()) {
-                GeneratorState::Yielded(_) => {
-                    self.state = YIELDED;
-                    if let Some(proxydb) = self.db.get_mut() {
-                        self.db_time = proxydb.db_credit();
-                        if proxydb.get_waiting() == true {
-                            self.state = WAITING;
-                        }
-                    }
-                }
-
-                GeneratorState::Complete(_) => {
-                    if let Some(proxydb) = self.db.get_mut() {
-                        self.db_time = proxydb.db_credit();
-                    }
-                    self.state = COMPLETED;
-                }
-            }));
-
-            // If there was a panic thrown, then mark the container as COMPLETED so that it
-            // does not get run again.
-            if let Err(_) = res {
-                self.state = COMPLETED;
-            }
-        }
-
-        // Calculate the amount of time the task executed for in cycles.
-        let exec = cycles::rdtsc() - start;
-
-        // Update the total execution time of the task.
-        self.time += exec;
-
-        // Return the state and the amount of time the task executed for.
-        return (self.state, exec);
+        // Mark as completed immediately (stub implementation)
+        self.state = COMPLETED;
+        (self.state, 0)
     }
 
     /// Refer to the Task trait for Documentation.
@@ -196,15 +136,6 @@ impl Task for Container {
         Packet<UdpHeader, EmptyMetadata>,
         Packet<UdpHeader, EmptyMetadata>,
     )> {
-        if let Some(proxydb) = self.db.get_mut() {
-            proxydb.commit();
-        }
-        // First, drop the generator. Doing so ensures that self.db is the
-        // only reference to the extension's execution context.
-        self.gen = Box::pin(|| {
-            yield 0;
-            return 0;
-        });
         None
     }
 
@@ -217,9 +148,7 @@ impl Task for Container {
     fn update_cache(&mut self, record: &[u8], keylen: usize) {
         if let Some(proxydb) = self.db.get_mut() {
             match parse_record_optype(record) {
-                OpType::SandstormRead => {
-                    proxydb.set_read_record(record.split_at(1).1, keylen);
-                }
+                OpType::SandstormRead => proxydb.set_read_record(record.split_at(1).1, keylen),
 
                 OpType::SandstormWrite => proxydb.set_write_record(record.split_at(1).1, keylen),
 

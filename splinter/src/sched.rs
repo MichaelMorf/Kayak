@@ -34,10 +34,10 @@ pub struct TaskManager {
     master: Arc<Master>,
 
     // The reference to the task generator, which is used to suspend/resume the generator.
-    ready: VecDeque<Box<Task>>,
+    ready: VecDeque<Box<dyn Task>>, // Changed to use dyn
 
     ///  The HashMap containing the waiting tasks.
-    pub waiting: HashMap<u64, Box<Task>>,
+    pub waiting: HashMap<u64, Box<dyn Task>>, // Changed to use dyn
 }
 
 impl TaskManager {
@@ -97,7 +97,7 @@ impl TaskManager {
             });
         }
 
-        if let Some(ext) = self.master.extensions.get(tenant_id, name) {
+        if let Some(ext) = self.master.extensions.get(tenant_id, &name) {
             let db = Rc::new(ProxyDB::new(
                 tenant,
                 id,
