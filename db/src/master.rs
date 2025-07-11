@@ -1907,9 +1907,8 @@ impl Service for Master {
         res: Packet<UdpHeader, EmptyMetadata>,
     ) -> Result<
         (
-
             Packet<UdpHeader, EmptyMetadata>,
-                       Packet<UdpHeader, EmptyMetadata>,
+            Packet<UdpHeader, EmptyMetadata>,
         ),
         (
             Packet<UdpHeader, EmptyMetadata>,
