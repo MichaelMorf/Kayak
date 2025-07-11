@@ -70,7 +70,8 @@ pub fn init(db: Rc<dyn DB>) -> u64 {
             range |= (*e as u32) << (idx << 3);
         }
     }
-    for _in 0..range - 1 {
+    // Fix for loop syntax: add missing 'in'
+    for _in in 0..range - 1 {
         // Finally, lookup the database for the object.
         obj = db.get(table, &keys);
 
