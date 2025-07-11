@@ -1782,9 +1782,17 @@ impl Master {
         // Check if the tenant provided lengths match the actual request length.
         if buf.len() != size_of::<InstallRequest>() + name_l + extn_l {
             res.common_header.status = RpcStatus::StatusMalformedRequest;
-            let res: [u8; size_of::<InstallResponse>()] = unsafe { transmute(res) };
+            let mut res_bytes = [0u8; std::mem::size_of::<InstallResponse>()];
+            let res_ptr = &res as *const InstallResponse as *const u8;
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    res_ptr,
+                    res_bytes.as_mut_ptr(),
+                    std::mem::size_of::<InstallResponse>(),
+                );
+            }
             let mut ret: Vec<u8> = Vec::new();
-            ret.extend_from_slice(&res);
+            ret.extend_from_slice(&res_bytes);
             return ret;
         }
 

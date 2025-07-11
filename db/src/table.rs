@@ -40,7 +40,7 @@ const N_BUCKETS: usize = 128;
 /// Each Entry in a Table has an associated Version that is per-key monotonic.
 /// This is used for concurrency control to identify when the value associated
 /// with a key has changed.
-pub struct Version(u64);
+pub struct Version(pub u64);
 
 #[derive(Clone)]
 /// An Entry in a Table which stores metadata about the stored value and a smart
