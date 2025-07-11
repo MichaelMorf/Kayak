@@ -14,17 +14,10 @@
  */
 
 #![crate_type = "dylib"]
-// Disable this because rustc complains about no_mangle being unsafe
-//#![forbid(unsafe_code)]
-#![feature(generators, generator_trait)]
-#![allow(bare_trait_objects)]
 
 extern crate sandstorm;
 
 use std::rc::Rc;
-use std::ops::Generator;
-use std::pin::Pin;
-
 use sandstorm::db::DB;
 
 /// This function is purposely not named "init". It is a simple extension
@@ -37,12 +30,8 @@ use sandstorm::db::DB;
 ///
 /// # Return
 ///
-/// A coroutine that can be run inside the database.
+/// Returns a stub value for testing purposes.
 #[no_mangle]
-#[allow(unused_assignments)]
-pub fn start(_db: Rc<DB>) -> Pin<Box<Generator<Yield=u64, Return=u64>>> {
-    Box::pin(move || {
-        yield 0;
-        return 0;
-    })
+pub fn start(_db: Rc<dyn DB>) -> u64 {
+    0
 }
