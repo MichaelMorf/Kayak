@@ -1,8 +1,8 @@
-use allocators::CacheAligned;
-use config::NetbricksConfiguration;
-use interface::dpdk::{init_system, init_thread};
-use interface::{PmdPort, PortQueue, VirtualPort, VirtualQueue};
-use scheduler::*;
+use crate::allocators::CacheAligned;
+use crate::config::NetbricksConfiguration;
+use crate::interface::dpdk::{init_system, init_thread};
+use crate::interface::{PmdPort, PortQueue, VirtualPort, VirtualQueue};
+use crate::scheduler::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::mpsc::{sync_channel, SyncSender};

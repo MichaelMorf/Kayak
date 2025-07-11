@@ -1,8 +1,8 @@
 use super::PortStats;
 use super::super::{PacketTx, PacketRx};
-use allocators::*;
-use common::*;
-use native::zcsi::*;
+use crate::allocators::*;
+use crate::common::*;
+use crate::native::zcsi::*;
 use std::fmt;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;

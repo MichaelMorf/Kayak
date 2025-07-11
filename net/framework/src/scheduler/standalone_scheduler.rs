@@ -4,7 +4,7 @@ use std::default::Default;
 use std::sync::Arc;
 use std::sync::mpsc::{SyncSender, Receiver, sync_channel, RecvError};
 use std::thread;
-use utils;
+use crate::utils;
 
 /// Used to keep stats about each pipeline and eventually grant tokens, etc.
 struct Runnable {

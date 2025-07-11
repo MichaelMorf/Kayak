@@ -1,7 +1,7 @@
 use super::METADATA_SLOTS;
-use config::{DEFAULT_CACHE_SIZE, DEFAULT_POOL_SIZE, NetbricksConfiguration};
-use native::libnuma;
-use native::zcsi;
+use crate::config::{DEFAULT_CACHE_SIZE, DEFAULT_POOL_SIZE, NetbricksConfiguration};
+use crate::native::libnuma;
+use crate::native::zcsi;
 use std::cell::Cell;
 use std::ffi::CString;
 
