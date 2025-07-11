@@ -8,7 +8,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type MapFn<T, M> = Box<FnMut(&Packet<T, M>) + Send>;
+pub type MapFn<T, M> = Box<dyn FnMut(&Packet<T, M>) + Send>;
 
 pub struct MapBatch<T, V>
 where

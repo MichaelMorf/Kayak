@@ -10,7 +10,7 @@ use scheduler::{Executable, Scheduler};
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
-pub type GroupFn<T, M> = Box<FnMut(&Packet<T, M>) -> usize + Send>;
+pub type GroupFn<T, M> = Box<dyn FnMut(&Packet<T, M>) -> usize + Send>;
 
 pub struct GroupBy<T, V>
 where

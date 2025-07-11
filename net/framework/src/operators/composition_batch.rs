@@ -11,14 +11,14 @@ use scheduler::Executable;
 /// `CompositionBatch` allows multiple NFs to be combined. A composition batch resets the packet pointer so that each NF
 /// can treat packets as originating from the NF itself.
 pub struct CompositionBatch {
-    parent: Box<Batch<Header = NullHeader, Metadata = EmptyMetadata>>,
+    parent: Box<dyn Batch<Header = NullHeader, Metadata = EmptyMetadata>>,
 }
 
 impl CompositionBatch {
     pub fn new<T: EndOffset, M: Sized + Send, V: 'static + Batch<Header = T, Metadata = M>>(
         parent: V,
     ) -> CompositionBatch {
-        CompositionBatch { parent: box parent.reset() }
+        CompositionBatch { parent: Box::new(parent.reset()) }
     }
 }
 

@@ -7,7 +7,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type MutableMetadataFn<T, M, M2> = Box<FnMut(&mut Packet<T, M>) -> M2 + Send>;
+pub type MutableMetadataFn<T, M, M2> = Box<dyn FnMut(&mut Packet<T, M>) -> M2 + Send>;
 
 pub struct MutableAddMetadataBatch<M, V>
 where

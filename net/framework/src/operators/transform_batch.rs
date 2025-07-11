@@ -8,7 +8,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type TransformFn<T, M> = Box<FnMut(&mut Packet<T, M>) + Send>;
+pub type TransformFn<T, M> = Box<dyn FnMut(&mut Packet<T, M>) + Send>;
 
 pub struct TransformBatch<T, V>
 where

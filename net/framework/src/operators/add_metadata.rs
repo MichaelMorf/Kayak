@@ -7,7 +7,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type MetadataFn<T, M, M2> = Box<FnMut(&Packet<T, M>) -> M2 + Send>;
+pub type MetadataFn<T, M, M2> = Box<dyn FnMut(&Packet<T, M>) -> M2 + Send>;
 
 pub struct AddMetadataBatch<M, V>
 where

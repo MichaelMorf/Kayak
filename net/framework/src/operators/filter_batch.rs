@@ -7,7 +7,7 @@ use headers::EndOffset;
 use interface::Packet;
 use interface::PacketTx;
 
-pub type FilterFn<T, M> = Box<FnMut(&Packet<T, M>) -> bool + Send>;
+pub type FilterFn<T, M> = Box<dyn FnMut(&Packet<T, M>) -> bool + Send>;
 
 pub struct FilterBatch<T, V>
 where
