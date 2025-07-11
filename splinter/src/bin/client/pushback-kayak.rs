@@ -250,7 +250,7 @@ where
     finished: bool,
     outstanding: u64,
     manager: RefCell<TaskManager>,
-    native_state: RefCell<HashMap<u64, NativeState>>,
+    native_state: RefCell<HashMap<u64, PushbackState>>,
     xloop_last_rdtsc: u64,
     xloop_last_rate: f32,
     xloop_last_x: f32,
@@ -371,6 +371,7 @@ where
             d_rate: 0,
             key_len: config.key_len,
             record_len: 1 + 8 + config.key_len + config.value_len,
+            ext_p: config.invoke_p as f32,
         }
     }
 
