@@ -29,7 +29,6 @@ use std::cell::RefCell;
 use std::fmt::Display;
 use std::mem;
 use std::mem::transmute;
-use std::pin::Pin;
 use std::sync::Arc;
 
 use crypto_hash::{digest, Algorithm};
@@ -540,7 +539,7 @@ where
     ///
     /// # Arguments
     /// *`order`: The amount of compute in each extension.
-    pub fn execute_task(&mut self, records: &[u8], _num: u32) {
+    pub fn execute_task(&mut self, records: &[u8], _num: u32) -> u64 {
         let mut aggr: u64 = 0;
         for record in records.chunks(139) {
             let vals = record.split_at(39).1;

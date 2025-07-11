@@ -19,7 +19,7 @@ use hashbrown::HashMap;
 
 use std::fs::File;
 use std::io::Write;
-use std::mem::{size_of, transmute};
+use std::mem::{size_of};
 use std::rc::Rc;
 use std::str::from_utf8;
 use std::str::FromStr;
@@ -1903,6 +1903,8 @@ impl Service for Master {
             OpCode::SandstormPutRpc => {
                 return self.put_native(req, res);
            }
+
+           
 
             OpCode::SandstormMultiGetRpc => {
                 return self.multiget_native(req, res);

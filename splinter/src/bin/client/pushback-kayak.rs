@@ -437,7 +437,7 @@ where
                             // Bimodal workload generator
                             if self.is_bimodal {
                                 // We do not need to use the ord passed in, we can generate our own ord here.
-                                p_get[20..24].copy_from_slice(&{ transmute::<u32, [u8; 4]>(self.ord.to_le()) });
+                                p_get[20..24].copy_from_slice(&self.ord.to_le_bytes());
                             }
                         }
                         // First 24 bytes on the payload were already pre-populated with the

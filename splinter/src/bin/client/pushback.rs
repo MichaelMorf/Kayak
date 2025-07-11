@@ -365,8 +365,7 @@ where
                     |tenant, key, ord| {
                         unsafe {
                             if ORD_DIST {
-                                p_get[20..24]
-                                    .copy_from_slice(&{ transmute::<u32, [u8; 4]>(ord.to_le()) });
+                                p_get[20..24].copy_from_slice(&ord.to_le_bytes());
                             }
                         }
                         // First 24 bytes on the payload were already pre-populated with the
