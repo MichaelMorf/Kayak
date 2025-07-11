@@ -1576,7 +1576,7 @@ impl Master {
             }
 
             // Create a Container for an extension and return.
-            if let Some(ext) = self.extensions.get(tenant_id, &name) {
+            if let Some(_ext) = self.extensions.get(tenant_id, &name) {
                 let db = Rc::new(Context::new(
                     req,
                     name_length,
@@ -1902,7 +1902,7 @@ impl Service for Master {
 
             OpCode::SandstormPutRpc => {
                 return self.put_native(req, res);
-                       }
+           }
 
             OpCode::SandstormMultiGetRpc => {
                 return self.multiget_native(req, res);
