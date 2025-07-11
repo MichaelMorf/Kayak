@@ -1,12 +1,12 @@
 use super::EndOffset;
 use byteorder::{BigEndian, ByteOrder};
-use headers::MacHeader;
+use crate::headers::MacHeader;
 use std::convert::From;
 use std::default::Default;
 use std::fmt;
 use std::net::Ipv4Addr;
 use std::slice;
-use utils::Flow;
+use crate::utils::Flow;
 
 /// IP header using SSE
 #[derive(Default)]

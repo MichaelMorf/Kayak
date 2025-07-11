@@ -1,5 +1,5 @@
 use super::EndOffset;
-use headers::NullHeader;
+use crate::headers::NullHeader;
 use std::default::Default;
 use std::fmt;
 use std::hash::Hash;
