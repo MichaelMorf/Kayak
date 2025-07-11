@@ -5,7 +5,6 @@ use super::packet_batch::PacketBatch;
 use crate::common::*;
 use crate::headers::EndOffset;
 use crate::headers::NullHeader;
-use crate::interface::PacketTx;
 use crate::scheduler::Executable;
 
 /// `CompositionBatch` allows multiple NFs to be combined. A composition batch resets the packet pointer so that each NF

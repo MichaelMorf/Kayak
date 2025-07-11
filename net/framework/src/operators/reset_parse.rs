@@ -4,7 +4,6 @@ use super::iterator::*;
 use super::packet_batch::PacketBatch;
 use crate::common::*;
 use crate::headers::NullHeader;
-use crate::interface::PacketTx;
 
 pub struct ResetParsingBatch<V>
 where

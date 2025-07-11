@@ -5,7 +5,6 @@ use super::packet_batch::PacketBatch;
 use crate::common::*;
 use crate::headers::EndOffset;
 use crate::interface::Packet;
-use crate::interface::PacketTx;
 use std::marker::PhantomData;
 
 pub type TransformFn<T, M> = Box<dyn FnMut(&mut Packet<T, M>) + Send>;

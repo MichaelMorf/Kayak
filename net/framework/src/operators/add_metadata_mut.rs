@@ -4,7 +4,6 @@ use super::iterator::*;
 use super::packet_batch::PacketBatch;
 use crate::common::*;
 use crate::interface::Packet;
-use crate::interface::PacketTx;
 use std::marker::PhantomData;
 
 pub type MutableMetadataFn<T, M, M2> = Box<dyn FnMut(&mut Packet<T, M>) -> M2 + Send>;

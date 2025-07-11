@@ -54,7 +54,7 @@ pub struct RoundRobin {
 
     // Run-queue of tasks waiting to execute. Tasks on this queue have either yielded, or have been
     // recently enqueued and never run before.
-    waiting: RwLock<VecDeque<Box<Task>>>,
+    waiting: RwLock<VecDeque<Box<dyn Task>>>,
 
     // Response packets returned by completed tasks. Will be picked up and sent out the network by
     // the Dispatch task.
@@ -93,7 +93,7 @@ impl RoundRobin {
     ///
     /// * `task`: The task to be added to the scheduler. Must implement the `Task` trait.
     #[inline]
-    pub fn enqueue(&self, task: Box<Task>) {
+    pub fn enqueue(&self, task: Box<dyn Task>) {
         self.waiting.write().push_back(task);
     }
 
@@ -104,7 +104,7 @@ impl RoundRobin {
     /// * `tasks`: A deque of tasks to be added to the scheduler. These tasks will be run in the
     ///            order that they are provided in, and must implement the `Task` trait.
     #[inline]
-    pub fn enqueue_many(&self, mut tasks: VecDeque<Box<Task>>) {
+    pub fn enqueue_many(&self, mut tasks: VecDeque<Box<dyn Task>>) {
         self.waiting.write().append(&mut tasks);
     }
 
@@ -116,7 +116,7 @@ impl RoundRobin {
     /// execution. Some might have run for a while and yielded, and some might have never run
     /// before. If there are no tasks waiting to run, then an empty vector is returned.
     #[inline]
-    pub fn dequeue_all(&self) -> VecDeque<Box<Task>> {
+    pub fn dequeue_all(&self) -> VecDeque<Box<dyn Task>> {
         let mut tasks = self.waiting.write();
         return tasks.drain(..).collect();
     }

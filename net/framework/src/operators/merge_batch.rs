@@ -3,7 +3,6 @@ use super::act::Act;
 use super::iterator::{BatchIterator, PacketDescriptor};
 use super::packet_batch::PacketBatch;
 use crate::common::*;
-use crate::interface::PacketTx;
 use crate::scheduler::Executable;
 use std::cmp;
 

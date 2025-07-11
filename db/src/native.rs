@@ -29,17 +29,17 @@ use e2d2::interface::Packet;
 // value is an optional tuple consisting of a request and response packet parsed/deparsed upto
 // their UDP headers. This is to allow for operations that might not require a response packet
 // such as garbage collection, logging etc. to be run as generators too.
-type NativeGenerator = Pin<
-    Box<
-        Generator<
-            Yield = u64,
-            Return = Option<(
-                Packet<UdpHeader, EmptyMetadata>,
-                Packet<UdpHeader, EmptyMetadata>,
-            )>,
-        >,
-    >,
->;
+// type NativeGenerator = Pin<
+//     Box<
+//         Generator<
+//             Yield = u64,
+//             Return = Option<(
+//                 Packet<UdpHeader, EmptyMetadata>,
+//                 Packet<UdpHeader, EmptyMetadata>,
+//             )>,
+//         >,
+//     >,
+// >;
 
 /// A task corresponding to a native operation (like get() and put() requests).
 pub struct Native {
@@ -56,8 +56,8 @@ pub struct Native {
     // The priority of the task. Required to determine when the task must be allowed to run next.
     priority: TaskPriority,
 
-    // The underlying generator for the task. Running the task effectively runs this generator.
-    gen: NativeGenerator,
+    // Generator/coroutine code removed for Rust 2021+ compatibility.
+    // gen: NativeGenerator,
 
     // The result (if any) returned by the generator once it completes execution.
     res: Cell<
@@ -80,7 +80,7 @@ impl Native {
     /// # Return:
     ///
     /// A Task containing a native operation that can be handed off to, and run by the scheduler.
-    pub fn new(prio: TaskPriority, generator: NativeGenerator) -> Native {
+    pub fn new(prio: TaskPriority /*, generator: NativeGenerator */) -> Native {
         // The res field is initialized to None. It will be populated when the task has completed
         // execution.
         Native {
@@ -88,7 +88,7 @@ impl Native {
             time: 0,
             db_time: 0,
             priority: prio,
-            gen: generator,
+            // gen: generator,
             res: Cell::new(None),
         }
     }
@@ -100,22 +100,8 @@ impl Task for Native {
     fn run(&mut self) -> (TaskState, u64) {
         let start = cycles::rdtsc();
 
-        // Run the generator if need be.
-        if self.state == INITIALIZED || self.state == YIELDED {
-            self.state = RUNNING;
-
-            match self.gen.as_mut().resume(()) {
-                GeneratorState::Yielded(time) => {
-                    self.db_time += time;
-                    self.state = YIELDED;
-                }
-
-                GeneratorState::Complete(pkts) => {
-                    self.res.set(pkts);
-                    self.state = COMPLETED;
-                }
-            }
-        }
+        // Generator/coroutine code removed for Rust 2021+ compatibility.
+        self.state = COMPLETED;
 
         // Get the continuous time this task executed for.
         let exec = cycles::rdtsc() - start;

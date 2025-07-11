@@ -5,7 +5,6 @@ use super::packet_batch::PacketBatch;
 use crate::common::*;
 use crate::headers::EndOffset;
 use crate::interface::Packet;
-use crate::interface::PacketTx;
 
 pub type FilterFn<T, M> = Box<dyn FnMut(&Packet<T, M>) -> bool + Send>;
 
