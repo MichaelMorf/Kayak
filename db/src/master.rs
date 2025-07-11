@@ -49,7 +49,6 @@ use spin::RwLock;
 use sandstorm::common::{TableId, TenantId, PACKET_UDP_LEN};
 use sandstorm::ext::*;
 use sandstorm::{LittleEndian, ReadBytesExt};
-use bytemuck::cast;
 
 /// Convert a raw pointer for Allocator into a Allocator reference. This can be used to pass
 /// the allocator reference across closures without cloning the allocator object.
@@ -1815,9 +1814,20 @@ impl Master {
             }
         }
 
-        let res: [u8; std::mem::size_of::<InstallResponse>()] = bytemuck::cast(res);
+        // Replace this:
+        // let res: [u8; std::mem::size_of::<InstallResponse>()] = bytemuck::cast(res);
+        // With safe struct-to-bytes copy:
+        let mut res_bytes = [0u8; std::mem::size_of::<InstallResponse>()];
+        let res_ptr = &res as *const InstallResponse as *const u8;
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                res_ptr,
+                res_bytes.as_mut_ptr(),
+                std::mem::size_of::<InstallResponse>(),
+            );
+        }
         let mut ret: Vec<u8> = Vec::new();
-        ret.extend_from_slice(&res);
+        ret.extend_from_slice(&res_bytes);
         return ret;
     }
 }
