@@ -14,6 +14,7 @@
  */
 
 use hashbrown::HashMap;
+use std::coroutine::Coroutine;
 use std::ops::Generator;
 use std::pin::Pin;
 use std::rc::Rc;
@@ -30,7 +31,7 @@ use spin::RwLock;
 const EXT_BUCKETS: usize = 32;
 
 // The type signature of the function that will be searched for inside an so.
-type Proc = unsafe extern "C" fn(Rc<DB>) -> Pin<Box<Generator<Yield = u64, Return = u64>>>;
+type Proc = unsafe extern "C" fn(Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>>;
 
 /// This type represents an extension that has been successfully loaded into
 /// the database. As long as this type is not dropped, the extension will exist
@@ -107,7 +108,7 @@ impl Extension {
     /// # Return
     ///
     /// A generator that can be scheduled by the database.
-    pub fn get(&self, db: Rc<DB>) -> Pin<Box<Generator<Yield = u64, Return = u64>>> {
+    pub fn get(&self, db: Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>> {
         // Call into the procedure, and return the generator.
         unsafe { (self.procedure)(db) }
     }
@@ -132,6 +133,8 @@ impl ExtensionManager {
         ExtensionManager {
             // Can't use the copy constructor because of the Arc<Extension>.
             extensions: [
+                RwLock::new(HashMap::new()),
+                RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
                 RwLock::new(HashMap::new()),
