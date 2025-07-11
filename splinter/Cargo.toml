@@ -1,6 +1,7 @@
 [package]
 name = "splinter"
 version = "0.1.0"
+edition = "2021"
 authors = ["Ankit Bhardwaj <bhrdwj.ankit@gmail.com>"]
 license = "MIT"
 

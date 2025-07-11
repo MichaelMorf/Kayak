@@ -13,6 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+use core::arch::asm;
 use std::sync::Once;
 use time::PreciseTime;
 
@@ -72,9 +73,14 @@ pub fn cycles_per_second() -> u64 {
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 pub fn rdtsc() -> u64 {
     unsafe {
-        let lo: u32;
-        let hi: u32;
-        llvm_asm!("rdtsc" : "={eax}"(lo), "={edx}"(hi) : : : "volatile");
+        let mut lo: u32;
+        let mut hi: u32;
+        asm!(
+            "rdtsc",
+            out("eax") lo,
+            out("edx") hi,
+            options(nomem, nostack, preserves_flags)
+        );
         ((hi as u64) << 32) | lo as u64
     }
 }

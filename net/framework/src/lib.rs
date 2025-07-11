@@ -1,5 +1,5 @@
 #![recursion_limit = "1024"]
-#![feature(llvm_asm)]
+#![feature(asm)]
 #![feature(log_syntax)]
 #![feature(box_syntax)]
 #![feature(specialization)]
