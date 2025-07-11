@@ -14,8 +14,6 @@
  */
 
 use std::cell::Cell;
-use std::ops::{Generator, GeneratorState};
-use std::pin::Pin;
 
 use super::cycles;
 use super::task::TaskState::*;

@@ -14,11 +14,7 @@
  */
 
 use std::cell::Cell;
-use std::ops::{Generator, GeneratorState};
-use std::panic::*;
-use std::pin::Pin;
 use std::rc::Rc;
-use std::thread;
 
 use super::context::Context;
 use super::cycles;

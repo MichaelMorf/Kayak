@@ -1578,7 +1578,7 @@ impl Master {
             }
 
             // Create a Container for an extension and return.
-            if let Some(ext) = self.extensions.get(tenant_id, name) {
+            if let Some(ext) = self.extensions.get(tenant_id, &name) {
                 let db = Rc::new(Context::new(
                     req,
                     name_length,
@@ -1588,7 +1588,7 @@ impl Master {
                     alloc,
                     model,
                 ));
-                let gen = ext.get(Rc::clone(&db) as Rc<DB>);
+                let gen = ext.get(Rc::clone(&db) as Rc<dyn DB>);
 
                 return Ok(Box::new(Container::new(TaskPriority::REQUEST, db, gen)));
             }
@@ -1744,7 +1744,7 @@ impl Master {
 
             // XXX: This yield is required to get the compiler to compile this closure into a
             // generator. It is unreachable and benign.
-            yield 0;
+            // yield 0;
         });
 
         // Return a native task.
