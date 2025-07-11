@@ -17,7 +17,6 @@ use hashbrown::HashMap;
 
 use bytes::Bytes;
 use spin::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use std::mem::MaybeUninit;
 use std::ops::Deref;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -209,6 +208,13 @@ impl Table {
             Unlocked,                               // Bucket not yet locked by this tx.
             ReadLocked(RwLockReadGuard<'a, Map>),   // Bucket read-locked by tx.
             WriteLocked(RwLockWriteGuard<'a, Map>), // Bucket write-locked by tx.
+        }
+
+        // Implement Default for Lock enum
+        impl<'a> Default for Lock<'a> {
+            fn default() -> Self {
+                Lock::Unlocked // or another appropriate variant
+            }
         }
 
         // Create an array of N_BUCKETS lock guards; the unsafe code here is to get

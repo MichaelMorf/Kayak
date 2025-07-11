@@ -14,7 +14,6 @@
  */
 
 use std::cell::{Cell, RefCell};
-use std::mem::transmute;
 use std::sync::Arc;
 use std::{mem, slice, str};
 
@@ -273,7 +272,6 @@ impl<'a> Context<'a> {
     pub fn db_credit(&self) -> u64 {
         self.db_credit.borrow().clone()
     }
-    #[allow(dead_code)]
 }
 
 // The DB trait for Context.
