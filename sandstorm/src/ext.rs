@@ -74,17 +74,7 @@ impl Extension {
         None
     }
 
-    /// This function calls into a previously loaded extension, and returns a
-    /// generator that can be scheduled by the database.
-    ///
-    /// # Arguments
-    ///
-    /// * `db`: A ref-counted type that implements the `DB` interface that the
-    ///         returned generator will be initialized with.
-    ///
-    /// # Return
-    ///
-    /// A generator that can be scheduled by the database.
+    // The following function is disabled due to missing coroutine/generator API.
     // pub fn get(&self, db: Rc<DB>) -> Pin<Box<dyn Coroutine<Yield = u64, Return = u64>>> {
     //     unsafe { (self.procedure)(db) }
     // }
@@ -107,41 +97,7 @@ impl ExtensionManager {
     /// An `ExtensionManager`.
     pub fn new() -> ExtensionManager {
         ExtensionManager {
-            // Can't use the copy constructor because of the Arc<Extension>.
-            extensions: [
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-                RwLock::new(HashMap::new()),
-            ],
+            extensions: std::array::from_fn(|_| RwLock::new(HashMap::new())),
         }
     }
 
